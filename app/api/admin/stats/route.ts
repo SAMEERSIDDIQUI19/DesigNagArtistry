@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as { role: string; userId: string };
 
     if (decoded.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       select: { total: true },
     });
 
-    const totalRevenue = orders.reduce((sum: number, order: any) => sum + Number(order.total), 0);
+    const totalRevenue = orders.reduce((sum: number, order: { total: unknown }) => sum + Number(order.total), 0);
 
     return NextResponse.json({
       totalProducts,

@@ -13,7 +13,21 @@ export async function GET(request: NextRequest) {
 
     // Build hierarchical structure
     const categoryMap = new Map();
-    const rootCategories: any[] = [];
+    const rootCategories: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      image: string | null;
+      parentId: string | null;
+      children: Array<{
+        id: string;
+        name: string;
+        slug: string;
+        image: string | null;
+        parentId: string | null;
+        children: Array<unknown>;
+      }>;
+    }> = [];
 
     // First pass: create map of all categories
     categories.forEach((category) => {
