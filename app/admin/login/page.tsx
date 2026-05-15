@@ -71,11 +71,11 @@ function AdminLoginForm() {
           <p className="text-gray-600 mt-2">Sign in to manage your store</p>
         </div>
 
-        {/* {created && (
+        {created && (
           <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4">
             Admin account created. Sign in with your email and password.
           </div>
-        )} */}
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -124,12 +124,12 @@ function AdminLoginForm() {
         </form>
 
         <div className="mt-6 text-center space-y-2">
-          <p className="text-sm text-gray-600">
+          {/* <p className="text-sm text-gray-600">
             No admin yet?{" "}
             <Link href="/admin/setup" className="text-blue-600 hover:text-blue-800">
               Create your first admin account
             </Link>
-          </p>
+          </p> */}
           <a href="/" className="text-sm text-blue-600 hover:text-blue-800 block">
             Back to Store
           </a>

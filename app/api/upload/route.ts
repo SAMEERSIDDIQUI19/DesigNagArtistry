@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,33 +28,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create uploads directory with productId if provided
-    /*turbopackIgnore: true*/
-    let uploadDir = join(process.cwd(), "public", "uploads");
-    if (productId) {
-      uploadDir = join(uploadDir, productId);
-    }
-    
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const extension = file.name.split(".").pop();
-    const filename = `${timestamp}-${randomString}.${extension}`;
-    /*turbopackIgnore: true*/
-    const filepath = join(uploadDir, filename);
-
-    // Write file
-    await writeFile(filepath, buffer);
-
-    // Return the URL
-    const url = productId ? `/uploads/${productId}/${filename}` : `/uploads/${filename}`;
+    // Dynamically import upload utilities only at runtime
+    const { saveUploadedFile } = await import("@/lib/upload-utils");
+    const url = await saveUploadedFile(file, productId);
     return NextResponse.json({ url });
   } catch (error) {
     console.error("Upload error:", error);
