@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Create uploads directory with productId if provided
+    /*turbopackIgnore: true*/
     let uploadDir = join(process.cwd(), "public", "uploads");
     if (productId) {
       uploadDir = join(uploadDir, productId);
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
     const randomString = Math.random().toString(36).substring(2, 15);
     const extension = file.name.split(".").pop();
     const filename = `${timestamp}-${randomString}.${extension}`;
+    /*turbopackIgnore: true*/
     const filepath = join(uploadDir, filename);
 
     // Write file
