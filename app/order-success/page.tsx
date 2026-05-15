@@ -1,9 +1,10 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
 
@@ -32,5 +33,13 @@ export default function OrderSuccessPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }

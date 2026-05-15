@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { getPrisma, prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 export async function POST(request: NextRequest) {
   try {
-    getPrisma();
     const { email, password } = await request.json();
 
     if (!email || !password) {

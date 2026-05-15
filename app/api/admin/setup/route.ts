@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { getPrisma, prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    getPrisma();
     const adminCount = await prisma.user.count({
       where: { role: "admin" },
     });
@@ -23,7 +22,6 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    getPrisma();
     const adminCount = await prisma.user.count({
       where: { role: "admin" },
     });
