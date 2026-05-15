@@ -1,0 +1,459 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+export default function NewProductPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    slug: "",
+    shortDescription: "",
+    description: "",
+    sku: "",
+    brand: "",
+    price: "",
+    salePrice: "",
+    costPrice: "",
+    isOnSale: false,
+    stock: "0",
+    thumbnail: "",
+    thumbnailFiles: [] as File[],
+    weight: "",
+    status: "active",
+    featured: false,
+    metaTitle: "",
+    metaDescription: "",
+    categoryId: "",
+  });
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch("/api/admin/categories", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(data);
+      } else {
+        console.error("Failed to fetch categories:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("admin_token");
+      
+      // First create the product
+      const response = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          price: parseFloat(formData.price),
+          salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+          costPrice: formData.costPrice ? parseFloat(formData.costPrice) : null,
+          stock: parseInt(formData.stock),
+          weight: formData.weight ? parseFloat(formData.weight) : null,
+          categoryId: formData.categoryId || null,
+        }),
+      });
+
+      if (response.ok) {
+        const product = await response.json();
+        
+        // If there are files to upload, upload them with the product ID
+        if (formData.thumbnailFiles.length > 0) {
+          const imageUrls = [];
+          for (const file of formData.thumbnailFiles) {
+            const imageUrl = await handleFileUploadWithProductId(file, product.id);
+            imageUrls.push(imageUrl);
+          }
+          
+          // Update the product with comma-separated thumbnail URLs
+          await fetch(`/api/admin/products/${product.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ thumbnail: imageUrls.join(",") }),
+          });
+        }
+        
+        router.push("/dashboard/products");
+      } else {
+        const error = await response.json();
+        alert(error.error || "Failed to create product");
+      }
+    } catch (error) {
+      console.error("Error creating product:", error);
+      alert("Failed to create product");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    // Store the files to upload after product creation
+    setFormData({
+      ...formData,
+      thumbnailFiles: Array.from(files),
+    });
+  };
+
+  const handleFileUploadWithProductId = async (file: File, productId: string) => {
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("productId", productId);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadFormData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.url;
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to upload image");
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+  };
+
+  return (
+    <div>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Add New Product</h1>
+
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Product Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Slug *
+              </label>
+              <input
+                type="text"
+                name="slug"
+                required
+                value={formData.slug}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                SKU
+              </label>
+              <input
+                type="text"
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Brand
+              </label>
+              <input
+                type="text"
+                name="brand"
+                value={formData.brand}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price *
+              </label>
+              <input
+                type="number"
+                name="price"
+                required
+                step="0.01"
+                min="0"
+                value={formData.price}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sale Price
+              </label>
+              <input
+                type="number"
+                name="salePrice"
+                step="0.01"
+                min="0"
+                value={formData.salePrice}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Cost Price
+              </label>
+              <input
+                type="number"
+                name="costPrice"
+                step="0.01"
+                min="0"
+                value={formData.costPrice}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Stock
+              </label>
+              <input
+                type="number"
+                name="stock"
+                min="0"
+                value={formData.stock}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Weight (kg)
+              </label>
+              <input
+                type="number"
+                name="weight"
+                step="0.01"
+                min="0"
+                value={formData.weight}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="draft">Draft</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category
+              </label>
+              <select
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">No Category</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="isOnSale"
+                  checked={formData.isOnSale}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium text-gray-700">On Sale</span>
+              </label>
+
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="featured"
+                  checked={formData.featured}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium text-gray-700">Featured</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Short Description
+            </label>
+            <textarea
+              name="shortDescription"
+              rows={2}
+              value={formData.shortDescription}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              name="description"
+              rows={4}
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Thumbnail Images
+            </label>
+            <div className="space-y-2">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileUpload}
+                disabled={uploading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {formData.thumbnailFiles.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600">{formData.thumbnailFiles.length} file(s) selected</p>
+                  <ul className="text-sm text-gray-500 mt-1">
+                    {formData.thumbnailFiles.map((file, index) => (
+                      <li key={index}>{file.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Meta Title
+            </label>
+            <input
+              type="text"
+              name="metaTitle"
+              value={formData.metaTitle}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Meta Description
+            </label>
+            <textarea
+              name="metaDescription"
+              rows={2}
+              value={formData.metaDescription}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-4">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Creating..." : "Create Product"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

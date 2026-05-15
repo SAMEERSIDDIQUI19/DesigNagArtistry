@@ -1,0 +1,134 @@
+{
+  "billboard": {
+    "slides": [
+      {
+        "image": "/images/banner-image1.jpg",
+        "title": "Handcrafted Elegance for Every Occasion",
+        "description": "Explore our exclusive collection of handcrafted jewelry designed to add elegance, confidence, and timeless beauty to your everyday style. From modern necklace sets to luxury accessories, discover pieces made to stand out beautifully.",
+        "buttonText": "Shop Collection",
+        "buttonLink": "/shop"
+      },
+      {
+        "image": "/images/banner-image2.jpg",
+        "title": "Luxury Earrings with Timeless Charm",
+        "description": "Upgrade your jewelry collection with elegant pearl drop earrings crafted for women who love sophisticated fashion. Perfect for weddings, parties, and everyday luxury styling with premium-quality craftsmanship.\n",
+        "buttonText": "Explore Now",
+        "buttonLink": "/shop"
+      },
+      {
+        "image": "/images/banner-image3.jpg",
+        "title": "Modern Jewelry Inspired by Artistry",
+        "description": "Discover artistic jewelry pieces designed with creativity, elegance, and modern fashion trends in mind. Our opal teardrop necklace collection blends luxury design with timeless sophistication for every special moment.\n",
+        "buttonText": "Discover More",
+        "buttonLink": "/shop"
+      }
+    ]
+  },
+  "banner": {
+    "items": [
+      {
+        "image": "/images/product-item4.jpg",
+        "title": "Modern Jewelry Collection",
+        "buttonText": "Shop Now",
+        "buttonLink": "/shop"
+      },
+      {
+        "image": "/images/product-item8.jpg",
+        "title": "Classic Elegant Designs",
+        "buttonText": "Explore Collection",
+        "buttonLink": "/about"
+      },
+      {
+        "image": "/images/product-item5.jpg",
+        "title": "Timeless Fashion Accessories",
+        "buttonText": "Discover More",
+        "buttonLink": "/about"
+      }
+    ]
+  },
+  "aboutUs": {
+    "title": "About DesigNagArtistry",
+    "description": "DesigNagArtistry is a premium fashion and jewelry brand focused on creating elegant handcrafted pieces inspired by timeless beauty and artistic creativity. We believe jewelry is more than an accessory — it is a statement of confidence, individuality, and style. Our collections feature modern necklaces, luxury earrings, fashionable accessories, and unique designs crafted with attention to detail and quality. Whether you are dressing for a special occasion or elevating your everyday look, DesigNagArtistry brings you jewelry designed to make every moment shine.\n",
+    "buttonText": "Learn More",
+    "buttonLink": "/about"
+  },
+  "featuredProducts": {
+    "title": "Featured Jewelry & Fashion Collection",
+    "buttonText": "Shop All",
+    "buttonLink": "/shop",
+    "products": [
+      {
+        "image": "/images/product-item1.jpg",
+        "name": "Gold Chain",
+        "price": "$200",
+        "slug": "gold-chain"
+      },
+      {
+        "image": "/images/product-item2.jpg",
+        "name": "Diamond Ring",
+        "price": "$350",
+        "slug": "diamond-ring"
+      },
+      {
+        "image": "/images/product-item3.jpg",
+        "name": "Pearl Necklace",
+        "price": "$280",
+        "slug": "pearl-necklace"
+      },
+      {
+        "image": "/images/product-item4.jpg",
+        "name": "Silver Earrings",
+        "price": "$150",
+        "slug": "silver-earrings"
+      }
+    ]
+  },
+  "testimonials": {
+    "items": [
+      {
+        "quote": "The jewelry designs are absolutely stunning and beautifully crafted. Every piece feels premium, elegant, and perfect for both casual and formal wear. I love the unique artistic touch in every collection.\n",
+        "author": "Hana Kimusaki"
+      },
+      {
+        "quote": "Amazing quality, elegant packaging, and timeless designs. DesigNagArtistry offers fashionable jewelry that truly stands out. I always receive compliments whenever I wear their accessories.\n",
+        "author": "Marium Anny"
+      }
+    ]
+  },
+  "trendingProducts": {
+    "title": "Trending Jewelry Collections",
+    "buttonText": "View All Products",
+    "buttonLink": "/shop",
+    "products": [
+      {
+        "image": "/images/product-item2.jpg",
+        "name": "Teardrop Earrings",
+        "price": "$180",
+        "slug": "teardrop-earrings"
+      },
+      {
+        "image": "/images/product-item11.jpg",
+        "name": "Crystal Bracelet",
+        "price": "$220",
+        "slug": "crystal-bracelet"
+      },
+      {
+        "image": "/images/product-item5.jpg",
+        "name": "Gold Pendant",
+        "price": "$300",
+        "slug": "gold-pendant"
+      },
+      {
+        "image": "/images/product-item10.jpg",
+        "name": "Silver Ring",
+        "price": "$120",
+        "slug": "silver-ring"
+      }
+    ]
+  },
+  "latestBlog": {
+    "title": "Latest Fashion & Jewelry Articles",
+    "buttonText": "Read More Articles",
+    "buttonLink": "/blog"
+  }
+}
