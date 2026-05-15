@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
+import { User } from "@prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
@@ -26,8 +27,8 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    const safeUsers = users.map((user) => {
-      const { password: _password, ...rest }: { password: string } & Record<string, unknown> = user;
+    const safeUsers = users.map((user: User) => {
+      const { password, ...rest } = user;
       return rest;
     });
     return NextResponse.json(safeUsers);
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const { password: _password, ...userWithoutPassword }: { password: string } & Record<string, unknown> = user;
+    const { password: _userPassword, ...userWithoutPassword }: User = user;
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
     console.error("User create error:", error);
