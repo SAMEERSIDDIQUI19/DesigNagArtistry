@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const { password: _password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword }: { password: string } & Record<string, unknown> = user;
     return NextResponse.json(
       { message: "Admin account created. You can sign in now.", user: userWithoutPassword },
       { status: 201 }

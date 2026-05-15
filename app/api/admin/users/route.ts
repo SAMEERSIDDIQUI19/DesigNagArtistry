@@ -26,7 +26,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    const safeUsers = users.map(({ password: _password, ...user }) => user);
+    const safeUsers = users.map((user) => {
+      const { password: _password, ...rest }: { password: string } & Record<string, unknown> = user;
+      return rest;
+    });
     return NextResponse.json(safeUsers);
   } catch (error) {
     console.error("Users fetch error:", error);
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const { password: _password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword }: { password: string } & Record<string, unknown> = user;
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
     console.error("User create error:", error);
