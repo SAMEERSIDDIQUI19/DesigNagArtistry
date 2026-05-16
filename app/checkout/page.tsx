@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -15,6 +15,9 @@ interface CartItem {
     salePrice: number | null;
     isOnSale: boolean;
     thumbnail: string | null;
+    images: {
+      imageUrl: string;
+    }[];
   };
 }
 
@@ -81,6 +84,26 @@ export default function CheckoutPage() {
     return price;
   };
 
+  const getProductImage = (product: CartItem['product']): string => {
+    if (product.thumbnail) {
+      const thumbnailUrl = product.thumbnail.includes(',')
+        ? product.thumbnail.split(',')[0].trim()
+        : product.thumbnail;
+      return thumbnailUrl.startsWith('/') || thumbnailUrl.startsWith('data:')
+        ? thumbnailUrl
+        : `/${thumbnailUrl}`;
+    }
+
+    if (product.images && product.images.length > 0) {
+      const imageUrl = product.images[0].imageUrl;
+      return imageUrl.startsWith('/') || imageUrl.startsWith('data:')
+        ? imageUrl
+        : `/${imageUrl}`;
+    }
+
+    return '/images/placeholder.jpg';
+  };
+
   const subtotal = cartItems.reduce((sum, item) => {
     return sum + displayPrice(item) * item.quantity;
   }, 0);
@@ -88,12 +111,12 @@ export default function CheckoutPage() {
   const shippingFee = 0;
   const total = subtotal + shippingFee;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
@@ -354,17 +377,11 @@ export default function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center gap-4 pb-4 border-b">
                     <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0">
-                      {item.product.thumbnail ? (
-                        <img
-                          src={item.product.thumbnail}
-                          alt={item.product.name}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 rounded-lg">
-                          No Image
-                        </div>
-                      )}
+                      <img
+                        src={getProductImage(item.product)}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900 text-sm">

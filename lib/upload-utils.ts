@@ -4,10 +4,10 @@ import { existsSync } from "fs";
 
 export async function saveUploadedFile(
   file: File,
-  productId: string | null
+  productId: string | null,
+  buffer?: Buffer
 ): Promise<string> {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  const fileBuffer = buffer || Buffer.from(await file.arrayBuffer());
 
   const uploadBase = join(/*turbopackIgnore: true*/ process.cwd(), "public", "uploads");
   const uploadDir = productId ? join(uploadBase, productId) : uploadBase;
@@ -22,7 +22,12 @@ export async function saveUploadedFile(
   const filename = `${timestamp}-${randomString}.${extension}`;
   const filepath = join(/*turbopackIgnore: true*/ uploadDir, filename);
 
-  await writeFile(filepath, buffer);
+  try {
+    await writeFile(filepath, fileBuffer);
+  } catch (error) {
+    console.error("Filesystem upload failed, using inline image data:", error);
+    return `data:${file.type};base64,${fileBuffer.toString("base64")}`;
+  }
 
   return productId ? `/uploads/${productId}/${filename}` : `/uploads/${filename}`;
 }

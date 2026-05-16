@@ -1056,3 +1056,95 @@ h5 {
     transform: rotate(-5deg);
 }
 
+@media only screen and (max-width: 991px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .container-fluid {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .site-header .logo,
+  .offcanvas .logo,
+  #footer img {
+    max-width: 150px;
+    height: auto;
+  }
+
+  #header-nav .offcanvas-end {
+    width: min(86vw, 360px);
+  }
+
+  .offcanvas.show .nav-item a.nav-link {
+    font-size: 1.5em;
+  }
+
+  .search-box input.search-input {
+    width: calc(100% - 32px);
+    min-width: 0;
+  }
+
+  .close-button {
+    right: 24px;
+  }
+
+  .padding-large {
+    padding-top: 4em;
+    padding-bottom: 4em;
+  }
+
+  .banner-content p {
+    width: 100%;
+  }
+
+  .gold-frame-wrapper {
+    display: block;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .product-thumbnail-slider {
+    height: auto;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  body {
+    font-size: 15px;
+  }
+
+  .navbar {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .navbar-toggler svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .banner-content h1.display-1 {
+    font-size: 2.5em;
+    line-height: 1;
+  }
+
+  .btn.btn-medium {
+    width: 100%;
+    padding: 0.9em 1.4em;
+    font-size: 1em;
+  }
+
+  #footer {
+    text-align: center;
+  }
+}
+

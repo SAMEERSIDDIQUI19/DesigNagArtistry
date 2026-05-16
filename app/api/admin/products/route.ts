@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const sku = typeof body.sku === "string" && body.sku.trim() ? body.sku.trim() : null;
 
     const product = await prisma.product.create({
       data: {
@@ -63,19 +64,19 @@ export async function POST(request: NextRequest) {
         slug: body.slug,
         shortDescription: body.shortDescription,
         description: body.description,
-        sku: body.sku,
-        brand: body.brand,
+        sku,
+        brand: body.brand || null,
         price: body.price,
         salePrice: body.salePrice,
         costPrice: body.costPrice,
         isOnSale: body.isOnSale || false,
         stock: body.stock || 0,
-        thumbnail: body.thumbnail,
+        thumbnail: body.thumbnail || null,
         weight: body.weight,
         status: body.status || "active",
         featured: body.featured || false,
-        metaTitle: body.metaTitle,
-        metaDescription: body.metaDescription,
+        metaTitle: body.metaTitle || null,
+        metaDescription: body.metaDescription || null,
         categoryId: body.categoryId,
       },
     });

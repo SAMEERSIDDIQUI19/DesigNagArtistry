@@ -25,6 +25,7 @@ export default function DashboardLayout({
   const [user, setUser] = useState<{ name: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -68,13 +69,41 @@ export default function DashboardLayout({
     );
   }
 
-  const sidebarWidth = sidebarOpen ? "w-64" : "w-16";
-  const mainMargin = sidebarOpen ? "ml-64" : "ml-16";
+  const sidebarWidth = sidebarOpen ? "md:w-64" : "md:w-16";
+  const mainMargin = sidebarOpen ? "md:ml-64" : "md:ml-16";
 
   return (
     <div className="min-h-screen bg-[#eeede9]">
+      {mobileSidebarOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-label="Close navigation"
+        />
+      )}
+
+      <div className="sticky top-0 z-20 flex items-center justify-between border-b border-stone-300/80 bg-[#f6f5f2] px-4 py-3 shadow-sm md:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(true)}
+          className="rounded-lg border border-stone-300 px-3 py-2 text-stone-800"
+          aria-label="Open navigation"
+        >
+          ☰
+        </button>
+        <span className="text-sm font-semibold uppercase tracking-wider text-stone-700">Admin</span>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-800"
+        >
+          Logout
+        </button>
+      </div>
+
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-full flex-col border-r border-stone-300/80 bg-[#f6f5f2] text-stone-800 shadow-sm transition-all duration-300 ${sidebarWidth}`}
+        className={`fixed left-0 top-0 z-40 flex h-full flex-col border-r border-stone-300/80 bg-[#f6f5f2] text-stone-800 shadow-sm transition-all duration-300 md:translate-x-0 ${mobileSidebarOpen ? "translate-x-0 w-72" : "-translate-x-full"} ${sidebarWidth}`}
       >
         <div className={`flex items-center justify-between border-b border-stone-300/60 py-5 ${sidebarOpen ? "px-4" : "justify-center px-0"}`}>
           {sidebarOpen ? (
@@ -124,6 +153,7 @@ export default function DashboardLayout({
                   <Link
                     href={item.href}
                     title={!sidebarOpen ? item.name : undefined}
+                    onClick={() => setMobileSidebarOpen(false)}
                     className={`flex items-center rounded-lg text-sm font-medium transition-colors ${
                       sidebarOpen ? "px-3 py-2.5" : "justify-center py-2.5"
                     } ${
@@ -156,7 +186,7 @@ export default function DashboardLayout({
       </aside>
 
       <main className={`min-h-screen transition-all duration-300 ${mainMargin}`}>
-        <div className="p-6 md:p-8">{children}</div>
+        <div className="p-4 sm:p-6 md:p-8">{children}</div>
       </main>
     </div>
   );
