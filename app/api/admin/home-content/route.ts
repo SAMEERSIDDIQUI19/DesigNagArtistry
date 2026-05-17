@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 const CONTENT_FILE = path.join(process.cwd(), 'data', 'home-content.json');
 const CONTENT_KEY = 'home';
 
+
+
 async function ensureSiteContentTable() {
   await prisma.$executeRaw`
     CREATE TABLE IF NOT EXISTS site_content (
