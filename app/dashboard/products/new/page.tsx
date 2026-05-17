@@ -27,7 +27,6 @@ export default function NewProductPage() {
     isOnSale: false,
     stock: "0",
     thumbnail: "",
-    thumbnailFiles: [] as File[],
     weight: "",
     status: "active",
     featured: false,
@@ -103,33 +102,6 @@ export default function NewProductPage() {
         return;
       }
 
-      const product = await response.json();
-      const productId: string = product.id;
-
-      // Step 2: Upload thumbnails to /uploads/{productId}/filename
-      if (formData.thumbnailFiles.length > 0) {
-        try {
-          const imageUrls = [];
-          for (const file of formData.thumbnailFiles) {
-            const imageUrl = await handleFileUploadWithProductId(file, productId);
-            imageUrls.push(imageUrl);
-          }
-
-          // Step 3: Patch only the thumbnail field — avoids overwriting other fields
-          await fetch(`/api/admin/products/${productId}/thumbnail`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ thumbnail: imageUrls.join(",") }),
-          });
-        } catch (uploadError) {
-          console.error("Thumbnail upload failed:", uploadError);
-          alert("Product created but thumbnail upload failed. Please edit the product to add the image.");
-        }
-      }
-
       router.push("/dashboard/products");
     } catch (error) {
       console.error("Error creating product:", error);
@@ -144,17 +116,6 @@ export default function NewProductPage() {
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    });
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    // Store the files to upload after product creation
-    setFormData({
-      ...formData,
-      thumbnailFiles: Array.from(files),
     });
   };
 
@@ -402,31 +363,6 @@ export default function NewProductPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Thumbnail Images
-            </label>
-            <div className="space-y-2">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileUpload}
-                disabled={uploading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {formData.thumbnailFiles.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-600">{formData.thumbnailFiles.length} file(s) selected</p>
-                  <ul className="text-sm text-gray-500 mt-1">
-                    {formData.thumbnailFiles.map((file, index) => (
-                      <li key={index}>{file.name}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

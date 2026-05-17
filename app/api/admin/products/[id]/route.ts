@@ -66,28 +66,32 @@ export async function PUT(
 
     const body = await request.json();
 
+    // Build update data only from fields explicitly present in the body.
+    // This means thumbnail-only updates won't accidentally clear other fields,
+    // while full updates still normalize empty strings to null.
+    const data: Record<string, unknown> = {};
+    if (body.name !== undefined)            data.name = body.name;
+    if (body.slug !== undefined)            data.slug = body.slug;
+    if (body.shortDescription !== undefined) data.shortDescription = body.shortDescription || null;
+    if (body.description !== undefined)     data.description = body.description || null;
+    if (body.sku !== undefined)             data.sku = body.sku || null;
+    if (body.brand !== undefined)           data.brand = body.brand || null;
+    if (body.price !== undefined)           data.price = body.price;
+    if (body.salePrice !== undefined)       data.salePrice = body.salePrice || null;
+    if (body.costPrice !== undefined)       data.costPrice = body.costPrice || null;
+    if (body.isOnSale !== undefined)        data.isOnSale = body.isOnSale;
+    if (body.stock !== undefined)           data.stock = body.stock;
+    if (body.thumbnail !== undefined)       data.thumbnail = body.thumbnail || null;
+    if (body.weight !== undefined)          data.weight = body.weight || null;
+    if (body.status !== undefined)          data.status = body.status;
+    if (body.featured !== undefined)        data.featured = body.featured;
+    if (body.metaTitle !== undefined)       data.metaTitle = body.metaTitle || null;
+    if (body.metaDescription !== undefined) data.metaDescription = body.metaDescription || null;
+    if (body.categoryId !== undefined)      data.categoryId = body.categoryId || null;
+
     const product = await prisma.product.update({
       where: { id },
-      data: {
-        name: body.name,
-        slug: body.slug,
-        shortDescription: body.shortDescription || null,
-        description: body.description || null,
-        sku: body.sku || null,
-        brand: body.brand || null,
-        price: body.price,
-        salePrice: body.salePrice || null,
-        costPrice: body.costPrice || null,
-        isOnSale: body.isOnSale,
-        stock: body.stock,
-        thumbnail: body.thumbnail || null,
-        weight: body.weight || null,
-        status: body.status,
-        featured: body.featured,
-        metaTitle: body.metaTitle || null,
-        metaDescription: body.metaDescription || null,
-        categoryId: body.categoryId || null,
-      },
+      data,
     });
 
     return NextResponse.json(product);

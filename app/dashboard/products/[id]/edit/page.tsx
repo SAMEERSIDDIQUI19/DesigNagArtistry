@@ -174,9 +174,9 @@ export default function EditProductPage() {
           // Replace existing thumbnails with the newly uploaded ones
           const allThumbnails = thumbnailUrls;
 
-          // Patch only the thumbnail field
-          await fetch(`/api/admin/products/${productId}/thumbnail`, {
-            method: "PATCH",
+          // Update only the thumbnail field via existing PUT endpoint
+          await fetch(`/api/admin/products/${productId}`, {
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,

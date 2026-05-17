@@ -245,14 +245,14 @@ export default function HomeContentPage() {
   };
 
   const handleImageUpload = async (section: string, index: number, file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", "home");
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+    uploadData.append("productId", "home");
 
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
-        body: formData,
+        body: uploadData,
       });
 
       if (response.ok) {
@@ -268,6 +268,9 @@ export default function HomeContentPage() {
         } else if (section === "trending") {
           handleTrendingProductChange(index, "image", imageUrl);
         }
+      } else {
+        const err = await response.json();
+        alert(err.error || "Failed to upload image");
       }
     } catch (error) {
       console.error("Error uploading image:", error);
