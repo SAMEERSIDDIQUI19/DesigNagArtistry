@@ -171,11 +171,8 @@ export default function EditProductPage() {
             thumbnailUrls.push(imageUrl);
           }
 
-          // Combine with existing thumbnails
-          const existingThumbnails = formData.thumbnail
-            ? formData.thumbnail.split(",").map((u) => u.trim()).filter(Boolean)
-            : [];
-          const allThumbnails = [...existingThumbnails, ...thumbnailUrls];
+          // Replace existing thumbnails with the newly uploaded ones
+          const allThumbnails = thumbnailUrls;
 
           // Patch only the thumbnail field
           await fetch(`/api/admin/products/${productId}/thumbnail`, {
