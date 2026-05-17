@@ -269,12 +269,19 @@ export default function HomeContentPage() {
           handleTrendingProductChange(index, "image", imageUrl);
         }
       } else {
-        const err = await response.json();
-        alert(err.error || "Failed to upload image");
+        let errMsg = `Upload failed (HTTP ${response.status})`;
+        try {
+          const err = await response.json();
+          errMsg = err.error || err.message || errMsg;
+        } catch {
+          const text = await response.text().catch(() => "");
+          if (text) errMsg += `: ${text.slice(0, 200)}`;
+        }
+        alert(errMsg);
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Failed to upload image");
+      alert(`Failed to upload image: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 

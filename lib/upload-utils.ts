@@ -7,14 +7,16 @@ export async function saveUploadedFile(
   productId: string | null,
   buffer?: Buffer
 ): Promise<string> {
-  const fileBuffer = buffer || Buffer.from(await file.arrayBuffer());
-
   const timestamp = Date.now();
   const randomString = Math.random().toString(36).substring(2, 15);
-  const extension = file.name.split(".").pop();
+  const nameParts = file.name.split(".");
+  const extension = nameParts.length > 1 ? nameParts.pop() : "png";
   const filename = `${timestamp}-${randomString}.${extension}`;
+  const mimeType = file.type || "image/png";
 
   try {
+    const fileBuffer = buffer || Buffer.from(await file.arrayBuffer());
+
     const uploadBase = join(/*turbopackIgnore: true*/ process.cwd(), "public", "uploads");
     const uploadDir = productId ? join(uploadBase, productId) : uploadBase;
 
@@ -28,7 +30,8 @@ export async function saveUploadedFile(
     return productId ? `/uploads/${productId}/${filename}` : `/uploads/${filename}`;
   } catch (error) {
     console.error("Filesystem upload failed, using inline image data:", error);
-    return `data:${file.type};base64,${fileBuffer.toString("base64")}`;
+    const fileBuffer = buffer || Buffer.from(await file.arrayBuffer());
+    return `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
   }
 }
 
