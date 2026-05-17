@@ -159,14 +159,15 @@ export default function EditProductPage() {
         return;
       }
 
-      const product = await response.json();
+      // We already know the product ID from the URL — use it directly for uploads
+      const productId = params.id as string;
 
-      // Upload new thumbnails if provided
+      // Upload new thumbnails if provided → /uploads/{productId}/filename
       if (formData.thumbnailFiles.length > 0) {
         try {
           const thumbnailUrls = [];
           for (const file of formData.thumbnailFiles) {
-            const imageUrl = await handleFileUploadWithProductId(file, product.id);
+            const imageUrl = await handleFileUploadWithProductId(file, productId);
             thumbnailUrls.push(imageUrl);
           }
 
@@ -177,7 +178,7 @@ export default function EditProductPage() {
           const allThumbnails = [...existingThumbnails, ...thumbnailUrls];
 
           // Patch only the thumbnail field
-          await fetch(`/api/admin/products/${product.id}/thumbnail`, {
+          await fetch(`/api/admin/products/${productId}/thumbnail`, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -191,18 +192,18 @@ export default function EditProductPage() {
         }
       }
 
-      // Upload additional images if provided
+      // Upload additional images → /uploads/{productId}/filename
       if (formData.additionalImages.length > 0) {
         for (let i = 0; i < formData.additionalImages.length; i++) {
           try {
-            const imageUrl = await handleFileUploadWithProductId(formData.additionalImages[i], product.id);
+            const imageUrl = await handleFileUploadWithProductId(formData.additionalImages[i], productId);
             await fetch("/api/admin/product-images", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
               },
-              body: JSON.stringify({ productId: product.id, imageUrl, sortOrder: i }),
+              body: JSON.stringify({ productId, imageUrl, sortOrder: i }),
             });
           } catch (uploadError) {
             console.error("Additional image upload failed:", uploadError);

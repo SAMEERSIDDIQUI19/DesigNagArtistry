@@ -66,52 +66,71 @@ export default function NewProductPage() {
 
     try {
       const token = localStorage.getItem("admin_token");
-      
-      // First create the product
+
+      // Step 1: Save all product details (exclude File arrays — not serializable)
+      const productPayload = {
+        name: formData.name,
+        slug: formData.slug,
+        shortDescription: formData.shortDescription,
+        description: formData.description,
+        sku: formData.sku,
+        brand: formData.brand,
+        price: parseFloat(formData.price),
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+        costPrice: formData.costPrice ? parseFloat(formData.costPrice) : null,
+        isOnSale: formData.isOnSale,
+        stock: parseInt(formData.stock),
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        status: formData.status,
+        featured: formData.featured,
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
+        categoryId: formData.categoryId || null,
+      };
+
       const response = await fetch("/api/admin/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price),
-          salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
-          costPrice: formData.costPrice ? parseFloat(formData.costPrice) : null,
-          stock: parseInt(formData.stock),
-          weight: formData.weight ? parseFloat(formData.weight) : null,
-          categoryId: formData.categoryId || null,
-        }),
+        body: JSON.stringify(productPayload),
       });
 
-      if (response.ok) {
-        const product = await response.json();
-        
-        // If there are files to upload, upload them with the product ID
-        if (formData.thumbnailFiles.length > 0) {
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || "Failed to create product");
+        return;
+      }
+
+      const product = await response.json();
+      const productId: string = product.id;
+
+      // Step 2: Upload thumbnails to /uploads/{productId}/filename
+      if (formData.thumbnailFiles.length > 0) {
+        try {
           const imageUrls = [];
           for (const file of formData.thumbnailFiles) {
-            const imageUrl = await handleFileUploadWithProductId(file, product.id);
+            const imageUrl = await handleFileUploadWithProductId(file, productId);
             imageUrls.push(imageUrl);
           }
-          
-          // Update the product with comma-separated thumbnail URLs
-          await fetch(`/api/admin/products/${product.id}`, {
-            method: "PUT",
+
+          // Step 3: Patch only the thumbnail field — avoids overwriting other fields
+          await fetch(`/api/admin/products/${productId}/thumbnail`, {
+            method: "PATCH",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ thumbnail: imageUrls.join(",") }),
           });
+        } catch (uploadError) {
+          console.error("Thumbnail upload failed:", uploadError);
+          alert("Product created but thumbnail upload failed. Please edit the product to add the image.");
         }
-        
-        router.push("/dashboard/products");
-      } else {
-        const error = await response.json();
-        alert(error.error || "Failed to create product");
       }
+
+      router.push("/dashboard/products");
     } catch (error) {
       console.error("Error creating product:", error);
       alert("Failed to create product");
