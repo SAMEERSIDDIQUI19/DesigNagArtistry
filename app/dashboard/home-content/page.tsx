@@ -9,17 +9,21 @@ interface HomeContent {
     slides: {
       image: string;
       title: string;
+      titleColor?: string;
       description: string;
       buttonText: string;
       buttonLink: string;
+      buttonOutlineColor?: string;
     }[];
   };
   banner: {
     items: {
       image: string;
       title: string;
+      titleColor?: string;
       buttonText: string;
       buttonLink: string;
+      buttonOutlineColor?: string;
     }[];
   };
   aboutUs: {
@@ -68,6 +72,11 @@ export default function HomeContentPage() {
   const [content, setContent] = useState<HomeContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState<Record<string, boolean>>({});
+
+  const togglePreview = (key: string) => {
+    setPreviewOpen(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   useEffect(() => {
     fetchContent();
@@ -366,12 +375,26 @@ export default function HomeContentPage() {
             <div key={index} className="border border-stone-200 rounded-lg p-4 mb-4">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-medium text-stone-800">Slide {index + 1}</h3>
-                <button
-                  onClick={() => handleRemoveSlide(index)}
-                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-                >
-                  Remove
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => togglePreview(`billboard-${index}`)}
+                    title={previewOpen[`billboard-${index}`] ? "Hide Preview" : "Show Preview"}
+                    className="px-3 py-1 bg-stone-100 text-stone-700 border border-stone-300 rounded hover:bg-stone-200 text-sm flex items-center gap-1"
+                  >
+                    {previewOpen[`billboard-${index}`] ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    )}
+                    Preview
+                  </button>
+                  <button
+                    onClick={() => handleRemoveSlide(index)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -405,6 +428,24 @@ export default function HomeContentPage() {
                     className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#704204]"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Title Font Colour</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={slide.titleColor || "#000000"}
+                      onChange={(e) => handleSlideChange(index, "titleColor", e.target.value)}
+                      className="h-10 w-14 rounded border border-stone-300 cursor-pointer p-1"
+                    />
+                    <input
+                      type="text"
+                      value={slide.titleColor || ""}
+                      onChange={(e) => handleSlideChange(index, "titleColor", e.target.value)}
+                      placeholder="#000000 or leave blank"
+                      className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#704204]"
+                    />
+                  </div>
+                </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
                   <textarea
@@ -432,6 +473,63 @@ export default function HomeContentPage() {
                     className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#704204]"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Button Outline Colour</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={slide.buttonOutlineColor || "#000000"}
+                      onChange={(e) => handleSlideChange(index, "buttonOutlineColor", e.target.value)}
+                      className="h-10 w-14 rounded border border-stone-300 cursor-pointer p-1"
+                    />
+                    <input
+                      type="text"
+                      value={slide.buttonOutlineColor || ""}
+                      onChange={(e) => handleSlideChange(index, "buttonOutlineColor", e.target.value)}
+                      placeholder="#000000 or leave blank"
+                      className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#704204]"
+                    />
+                  </div>
+                </div>
+                {previewOpen[`billboard-${index}`] && (
+                  <div className="md:col-span-2 mt-4">
+                    <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Live Preview</p>
+                    <div
+                      className="relative rounded-lg overflow-hidden border border-stone-200"
+                      style={{
+                        backgroundImage: slide.image ? `url(${slide.image})` : 'none',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right center',
+                        backgroundSize: 'contain',
+                        minHeight: '220px',
+                        backgroundColor: '#f6f5f2',
+                      }}
+                    >
+                      <div className="absolute inset-0 flex flex-col justify-center px-8 py-6">
+                        <h2
+                          className="text-3xl font-bold mb-2 capitalize"
+                          style={{ color: slide.titleColor || undefined }}
+                        >
+                          {slide.title || <span className="opacity-40">Title here</span>}
+                        </h2>
+                        {slide.description && (
+                          <p className="text-sm mb-4 max-w-xs" style={{ color: slide.titleColor ? slide.titleColor + 'cc' : '#444' }}>{slide.description}</p>
+                        )}
+                        {slide.buttonText && (
+                          <span
+                            className="inline-block px-5 py-2 border-2 text-sm font-medium w-fit"
+                            style={{
+                              borderColor: slide.buttonOutlineColor || '#222222',
+                              color: slide.buttonOutlineColor || '#222222',
+                            }}
+                          >
+                            {slide.buttonText} &rarr;
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -452,12 +550,26 @@ export default function HomeContentPage() {
             <div key={index} className="border border-stone-200 rounded-lg p-4 mb-4">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-medium text-stone-800">Banner {index + 1}</h3>
-                <button
-                  onClick={() => handleRemoveBanner(index)}
-                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-                >
-                  Remove
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => togglePreview(`banner-${index}`)}
+                    title={previewOpen[`banner-${index}`] ? "Hide Preview" : "Show Preview"}
+                    className="px-3 py-1 bg-stone-100 text-stone-700 border border-stone-300 rounded hover:bg-stone-200 text-sm flex items-center gap-1"
+                  >
+                    {previewOpen[`banner-${index}`] ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    )}
+                    Preview
+                  </button>
+                  <button
+                    onClick={() => handleRemoveBanner(index)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -492,6 +604,24 @@ export default function HomeContentPage() {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Title Font Colour</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={item.titleColor || "#000000"}
+                      onChange={(e) => handleBannerChange(index, "titleColor", e.target.value)}
+                      className="h-10 w-14 rounded border border-stone-300 cursor-pointer p-1"
+                    />
+                    <input
+                      type="text"
+                      value={item.titleColor || ""}
+                      onChange={(e) => handleBannerChange(index, "titleColor", e.target.value)}
+                      placeholder="#000000 or leave blank"
+                      className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#704204]"
+                    />
+                  </div>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Button Text</label>
                   <input
                     type="text"
@@ -509,6 +639,53 @@ export default function HomeContentPage() {
                     className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#704204]"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Button Outline Colour</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={item.buttonOutlineColor || "#000000"}
+                      onChange={(e) => handleBannerChange(index, "buttonOutlineColor", e.target.value)}
+                      className="h-10 w-14 rounded border border-stone-300 cursor-pointer p-1"
+                    />
+                    <input
+                      type="text"
+                      value={item.buttonOutlineColor || ""}
+                      onChange={(e) => handleBannerChange(index, "buttonOutlineColor", e.target.value)}
+                      placeholder="#000000 or leave blank"
+                      className="flex-1 px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#704204]"
+                    />
+                  </div>
+                </div>
+                {previewOpen[`banner-${index}`] && (
+                  <div className="md:col-span-2 mt-4">
+                    <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Live Preview</p>
+                    <div className="relative rounded-lg overflow-hidden border border-stone-200" style={{ backgroundColor: '#f6f5f2' }}>
+                      {item.image && (
+                        <img src={item.image} alt="preview" className="w-full h-48 object-cover" />
+                      )}
+                      <div className={`p-5 ${item.image ? 'absolute bottom-0 left-0 right-0' : ''}`}>
+                        <h2
+                          className="text-2xl font-bold mb-3 capitalize"
+                          style={{ color: item.titleColor || undefined }}
+                        >
+                          {item.title || <span className="opacity-40">Title here</span>}
+                        </h2>
+                        {item.buttonText && (
+                          <span
+                            className="inline-block px-5 py-2 border-2 text-sm font-medium w-fit"
+                            style={{
+                              borderColor: item.buttonOutlineColor || '#222222',
+                              color: item.buttonOutlineColor || '#222222',
+                            }}
+                          >
+                            {item.buttonText} &rarr;
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}

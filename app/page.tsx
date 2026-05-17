@@ -10,17 +10,21 @@ interface HomeContent {
     slides: {
       image: string;
       title: string;
+      titleColor?: string;
       description: string;
       buttonText: string;
       buttonLink: string;
+      buttonOutlineColor?: string;
     }[];
   };
   banner: {
     items: {
       image: string;
       title: string;
+      titleColor?: string;
       buttonText: string;
       buttonLink: string;
+      buttonOutlineColor?: string;
     }[];
   };
   aboutUs: {
@@ -187,11 +191,11 @@ export default function Home() {
                       <div className="banner-item align-content-center"
                         style={{ backgroundImage: `url(${slide.image})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right', height: '850px', backgroundSize: 'contain' }}>
                         <div className="banner-content padding-large">
-                          <h2 className="display-2 text-capitalize text-dark pb-2">{slide.title}</h2>
+                          <h2 className="display-2 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
                           <p>
                             {slide.description}
                           </p>
-                          <Link href={slide.buttonLink} className="btn btn-medium btn-arrow position-relative mt-3">
+                          <Link href={slide.buttonLink} className="btn btn-medium btn-arrow position-relative mt-3" style={slide.buttonOutlineColor ? { borderColor: slide.buttonOutlineColor, color: slide.buttonOutlineColor } : {}}>
                             <span className="text-capitalize">{slide.buttonText}</span>
                             <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
                               <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
@@ -219,8 +223,8 @@ export default function Home() {
                   <img src={item.image} className="img-fluid" alt="img" />
                 </div>
                 <div className="banner-content-text position-absolute">
-                  <h2 className="display-5">{item.title}</h2>
-                  <Link href={item.buttonLink} className="btn btn-medium btn-arrow outline-dark position-relative mt-3">
+                  <h2 className="display-5" style={item.titleColor ? { color: item.titleColor } : {}}>{item.title}</h2>
+                  <Link href={item.buttonLink} className="btn btn-medium btn-arrow outline-dark position-relative mt-3" style={item.buttonOutlineColor ? { borderColor: item.buttonOutlineColor, color: item.buttonOutlineColor } : {}}>
                     <span className="text-capitalize fs-6">{item.buttonText}</span>
                     <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
                       <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
