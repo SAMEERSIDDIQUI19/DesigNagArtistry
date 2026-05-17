@@ -11,11 +11,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
+    // Validate file type (skip if browser didn't report a type)
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif", "image/avif", "image/heic", "image/heif"];
+    if (file.type && !allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed." },
+        { error: `Invalid file type (${file.type}). Only JPEG, PNG, WebP, GIF, and AVIF are allowed.` },
         { status: 400 }
       );
     }
@@ -34,9 +34,10 @@ export async function POST(request: NextRequest) {
     const url = await saveUploadedFile(file, productId);
     return NextResponse.json({ url });
   } catch (error) {
-    console.error("Upload error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Upload error:", msg, error);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      { error: `Failed to upload file: ${msg}` },
       { status: 500 }
     );
   }
