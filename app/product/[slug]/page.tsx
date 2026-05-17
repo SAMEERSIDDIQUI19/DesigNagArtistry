@@ -125,8 +125,9 @@ export default function ProductDetailPage() {
       if (response.ok) {
         setProduct(data);
         
-        // Parse comma-separated thumbnail URLs
-        const thumbnailUrls = data.thumbnail ? data.thumbnail.split(",").filter((url: string) => url.trim()) : [];
+        // Parse thumbnail URLs safely (handles base64 data URLs)
+        const { parseThumbnails } = await import("@/lib/thumbnail-utils");
+        const thumbnailUrls = parseThumbnails(data.thumbnail);
         
         // Combine thumbnail URLs with ProductImage images
         const productImageUrls = data.images.map((img: any) => img.imageUrl);

@@ -3,6 +3,7 @@
 import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getPrimaryThumbnail } from "@/lib/thumbnail-utils";
 
 interface CartItem {
   id: string;
@@ -86,12 +87,7 @@ export default function CheckoutPage() {
 
   const getProductImage = (product: CartItem['product']): string => {
     if (product.thumbnail) {
-      const thumbnailUrl = product.thumbnail.includes(',')
-        ? product.thumbnail.split(',')[0].trim()
-        : product.thumbnail;
-      return thumbnailUrl.startsWith('/') || thumbnailUrl.startsWith('data:')
-        ? thumbnailUrl
-        : `/${thumbnailUrl}`;
+      return getPrimaryThumbnail(product.thumbnail) || '/images/placeholder.jpg';
     }
 
     if (product.images && product.images.length > 0) {

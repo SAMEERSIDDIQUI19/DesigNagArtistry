@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getPrimaryThumbnail } from "@/lib/thumbnail-utils";
 
 interface Product {
   id: string;
@@ -143,11 +144,7 @@ export default function ShopPage() {
     
     // If thumbnail exists, use it
     if (product.thumbnail) {
-      // If thumbnail contains comma-separated URLs, take the first one
-      const thumbnailUrl = product.thumbnail.includes(',') 
-        ? product.thumbnail.split(',')[0].trim() 
-        : product.thumbnail;
-      const imageUrl = thumbnailUrl.startsWith('/') ? thumbnailUrl : `/${thumbnailUrl}`;
+      const imageUrl = getPrimaryThumbnail(product.thumbnail) || '/images/placeholder.jpg';
       console.log("Using thumbnail:", imageUrl);
       return imageUrl;
     }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getPrimaryThumbnail } from "@/lib/thumbnail-utils";
 
 interface CartItem {
   id: string;
@@ -122,12 +123,7 @@ export default function CartPage() {
   const getProductImage = (product: CartItem['product']): string => {
     // If thumbnail exists, use it
     if (product.thumbnail) {
-      // If thumbnail contains comma-separated URLs, take the first one
-      const thumbnailUrl = product.thumbnail.includes(',') 
-        ? product.thumbnail.split(',')[0].trim() 
-        : product.thumbnail;
-      const imageUrl = thumbnailUrl.startsWith('/') ? thumbnailUrl : `/${thumbnailUrl}`;
-      return imageUrl;
+      return getPrimaryThumbnail(product.thumbnail) || '/images/placeholder.jpg';
     }
     // Otherwise, use the first image from images array if available
     if (product.images && product.images.length > 0) {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import RichTextEditor from "@/components/RichTextEditor";
+import { parseThumbnails, joinThumbnails } from "@/lib/thumbnail-utils";
 
 interface Category {
   id: string;
@@ -40,11 +41,11 @@ export default function EditProductPage() {
   });
 
   const handleDeleteThumbnail = (indexToDelete: number) => {
-    const thumbnails = formData.thumbnail.split(",");
+    const thumbnails = parseThumbnails(formData.thumbnail);
     const newThumbnails = thumbnails.filter((_, index) => index !== indexToDelete);
     setFormData({
       ...formData,
-      thumbnail: newThumbnails.join(","),
+      thumbnail: joinThumbnails(newThumbnails),
     });
   };
 
@@ -181,7 +182,7 @@ export default function EditProductPage() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ thumbnail: allThumbnails.join(",") }),
+            body: JSON.stringify({ thumbnail: joinThumbnails(allThumbnails) }),
           });
         } catch (uploadError) {
           console.error("Thumbnail upload failed:", uploadError);
@@ -524,7 +525,7 @@ export default function EditProductPage() {
                 <div className="mt-2">
                   <p className="text-sm text-gray-600">Existing thumbnails:</p>
                   <div className="grid grid-cols-4 gap-2 mt-2">
-                    {formData.thumbnail.split(",").map((thumb, index) => (
+                    {parseThumbnails(formData.thumbnail).map((thumb, index) => (
                       <div key={index} className="relative">
                         <img
                           src={thumb}
