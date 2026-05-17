@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { compressImage } from "@/lib/image-compress";
 
 interface HomeContent {
   billboard: {
@@ -245,8 +246,9 @@ export default function HomeContentPage() {
   };
 
   const handleImageUpload = async (section: string, index: number, file: File) => {
+    const compressed = await compressImage(file);
     const uploadData = new FormData();
-    uploadData.append("file", file);
+    uploadData.append("file", compressed);
     uploadData.append("productId", "home");
 
     try {

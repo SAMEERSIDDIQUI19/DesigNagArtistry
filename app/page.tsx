@@ -185,7 +185,7 @@ export default function Home() {
                   <div className="row">
                     <div className="col-md-12">
                       <div className="banner-item align-content-center"
-                        style={{ backgroundImage: `url(${slide.image})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right', height: '850px' }}>
+                        style={{ backgroundImage: `url(${slide.image})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right', height: '850px', backgroundSize: 'contain' }}>
                         <div className="banner-content padding-large">
                           <h2 className="display-2 text-capitalize text-dark pb-2">{slide.title}</h2>
                           <p>

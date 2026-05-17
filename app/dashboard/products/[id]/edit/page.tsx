@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import RichTextEditor from "@/components/RichTextEditor";
 import { parseThumbnails, joinThumbnails } from "@/lib/thumbnail-utils";
+import { compressImage } from "@/lib/image-compress";
 
 interface Category {
   id: string;
@@ -248,8 +249,9 @@ export default function EditProductPage() {
 
   const handleFileUploadWithProductId = async (file: File, productId: string) => {
     try {
+      const compressed = await compressImage(file);
       const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
+      uploadFormData.append("file", compressed);
       uploadFormData.append("productId", productId);
 
       const response = await fetch("/api/upload", {
