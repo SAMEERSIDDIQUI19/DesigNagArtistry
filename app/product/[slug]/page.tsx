@@ -305,7 +305,7 @@ export default function ProductDetailPage() {
             {product.description && (
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
-                {product.description.trim().startsWith("<") ? (
+                {/<[a-z][\s\S]*>/i.test(product.description) ? (
                   <div
                     className="text-gray-600 prose prose-sm max-w-none"
                     dangerouslySetInnerHTML={{ __html: product.description }}
