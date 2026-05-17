@@ -31,11 +31,30 @@ export default function RichTextEditor({
   const editorRef = useRef<HTMLDivElement>(null);
   const isInternalChange = useRef(false);
 
-  useEffect(() => {
-    if (editorRef.current && !isInternalChange.current) {
-      if (editorRef.current.innerHTML !== value) {
-        editorRef.current.innerHTML = value || "";
+  // Normalize editor HTML: wrap bare text nodes and convert <div> to <p>
+  const normalizeHtml = (el: HTMLDivElement): string => {
+    const children = Array.from(el.childNodes);
+    children.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const p = document.createElement("p");
+        p.textContent = node.textContent || "";
+        el.replaceChild(p, node);
+      } else if (node.nodeName === "DIV") {
+        const p = document.createElement("p");
+        p.innerHTML = (node as HTMLElement).innerHTML;
+        el.replaceChild(p, node);
       }
+    });
+    return el.innerHTML;
+  };
+
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    // Set paragraph separator so Enter creates <p> not <div>
+    document.execCommand("defaultParagraphSeparator", false, "p");
+    if (!isInternalChange.current && el.innerHTML !== (value || "")) {
+      el.innerHTML = value || "";
     }
     isInternalChange.current = false;
   }, [value]);
@@ -45,14 +64,14 @@ export default function RichTextEditor({
     editorRef.current?.focus();
     if (editorRef.current) {
       isInternalChange.current = true;
-      onChange(editorRef.current.innerHTML);
+      onChange(normalizeHtml(editorRef.current));
     }
   }, [onChange]);
 
   const handleInput = () => {
     if (editorRef.current) {
       isInternalChange.current = true;
-      onChange(editorRef.current.innerHTML);
+      onChange(normalizeHtml(editorRef.current));
     }
   };
 

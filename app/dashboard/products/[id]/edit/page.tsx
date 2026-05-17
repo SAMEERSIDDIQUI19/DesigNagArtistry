@@ -120,7 +120,29 @@ export default function EditProductPage() {
 
     try {
       const token = localStorage.getItem("admin_token");
-      
+
+      // Build product payload — exclude File arrays which cannot be serialized
+      const productPayload = {
+        name: formData.name,
+        slug: formData.slug,
+        shortDescription: formData.shortDescription,
+        description: formData.description,
+        sku: formData.sku,
+        brand: formData.brand,
+        price: parseFloat(formData.price),
+        salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
+        costPrice: formData.costPrice ? parseFloat(formData.costPrice) : null,
+        isOnSale: formData.isOnSale,
+        stock: parseInt(formData.stock),
+        thumbnail: formData.thumbnail,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        status: formData.status,
+        featured: formData.featured,
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
+        categoryId: formData.categoryId || null,
+      };
+
       // Update product data first
       const response = await fetch(`/api/admin/products/${params.id}`, {
         method: "PUT",
@@ -128,68 +150,67 @@ export default function EditProductPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          price: parseFloat(formData.price),
-          salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
-          costPrice: formData.costPrice ? parseFloat(formData.costPrice) : null,
-          stock: parseInt(formData.stock),
-          weight: formData.weight ? parseFloat(formData.weight) : null,
-          categoryId: formData.categoryId || null,
-        }),
+        body: JSON.stringify(productPayload),
       });
 
-      if (response.ok) {
-        const product = await response.json();
-        
-        // Upload thumbnails if provided
-        if (formData.thumbnailFiles.length > 0) {
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || "Failed to update product");
+        return;
+      }
+
+      const product = await response.json();
+
+      // Upload new thumbnails if provided
+      if (formData.thumbnailFiles.length > 0) {
+        try {
           const thumbnailUrls = [];
           for (const file of formData.thumbnailFiles) {
             const imageUrl = await handleFileUploadWithProductId(file, product.id);
             thumbnailUrls.push(imageUrl);
           }
-          
-          // Combine with existing thumbnails if any
-          const existingThumbnails = formData.thumbnail ? formData.thumbnail.split(",") : [];
+
+          // Combine with existing thumbnails
+          const existingThumbnails = formData.thumbnail
+            ? formData.thumbnail.split(",").map((u) => u.trim()).filter(Boolean)
+            : [];
           const allThumbnails = [...existingThumbnails, ...thumbnailUrls];
-          
-          await fetch(`/api/admin/products/${product.id}`, {
-            method: "PUT",
+
+          // Patch only the thumbnail field
+          await fetch(`/api/admin/products/${product.id}/thumbnail`, {
+            method: "PATCH",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ thumbnail: allThumbnails.join(",") }),
           });
+        } catch (uploadError) {
+          console.error("Thumbnail upload failed:", uploadError);
+          alert("Product saved but thumbnail upload failed. Please try uploading the image again.");
         }
-        
-        // Upload additional images if provided
-        if (formData.additionalImages.length > 0) {
-          for (let i = 0; i < formData.additionalImages.length; i++) {
+      }
+
+      // Upload additional images if provided
+      if (formData.additionalImages.length > 0) {
+        for (let i = 0; i < formData.additionalImages.length; i++) {
+          try {
             const imageUrl = await handleFileUploadWithProductId(formData.additionalImages[i], product.id);
-            
-            // Save to ProductImage table
             await fetch("/api/admin/product-images", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
               },
-              body: JSON.stringify({
-                productId: product.id,
-                imageUrl: imageUrl,
-                sortOrder: i,
-              }),
+              body: JSON.stringify({ productId: product.id, imageUrl, sortOrder: i }),
             });
+          } catch (uploadError) {
+            console.error("Additional image upload failed:", uploadError);
           }
         }
-        
-        router.push("/dashboard/products");
-      } else {
-        const error = await response.json();
-        alert(error.error || "Failed to update product");
       }
+
+      router.push("/dashboard/products");
     } catch (error) {
       console.error("Error updating product:", error);
       alert("Failed to update product");
