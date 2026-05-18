@@ -32,9 +32,11 @@ export async function POST(request: NextRequest) {
     // Generate order number
     const orderNumber = "ORD-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9).toUpperCase();
 
-    // Store all guest customer + address data as JSON in notes (no schema migration needed)
-    const guestData = JSON.stringify({ email, fullName, phone, country, city, area, postalCode, addressLine });
-    const fullNotes = `__GUEST__:${guestData}__END__${notes ? `\n${notes}` : ""}`;
+    // Store guest customer + address data as a JSON object in notes
+    const fullNotes = JSON.stringify({
+      _guest: { email, fullName, phone, country, city, area, postalCode, addressLine },
+      _userNotes: notes || "",
+    });
 
     // Create order
     const order = await prisma.order.create({

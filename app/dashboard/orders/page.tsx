@@ -133,21 +133,35 @@ export default function OrdersPage() {
 
   const parseGuestData = (notes: string | null): Record<string, string> | null => {
     if (!notes) return null;
-    // New format: __GUEST__:{...}__END__
-    const newMatch = notes.match(/__GUEST__:(.+?)__END__/s);
-    if (newMatch) { try { return JSON.parse(newMatch[1]); } catch { return null; } }
-    // Legacy format: [Customer Email: xxx]
-    const legacyMatch = notes.match(/^\[Customer Email: ([^\]]+)\]/);
-    if (legacyMatch) return { email: legacyMatch[1] };
+    // Current format: JSON object with _guest key
+    try {
+      const parsed = JSON.parse(notes);
+      if (parsed?._guest) return parsed._guest;
+    } catch {}
+    // Legacy delimiter format: __GUEST__:{...}__END__
+    const i = notes.indexOf("__GUEST__:");
+    const j = notes.indexOf("__END__");
+    if (i !== -1 && j !== -1) {
+      try { return JSON.parse(notes.slice(i + 10, j)); } catch {}
+    }
+    // Oldest legacy: [Customer Email: xxx]
+    const em = notes.match(/^\[Customer Email: ([^\]]+)\]/);
+    if (em) return { email: em[1] };
     return null;
   };
 
   const parseCleanNotes = (notes: string | null) => {
     if (!notes) return null;
-    return notes
-      .replace(/__GUEST__:.+?__END__\n?/s, "")
-      .replace(/^\[Customer Email: [^\]]+\]\n?/, "")
-      .trim() || null;
+    try {
+      const parsed = JSON.parse(notes);
+      if (parsed?._guest) return (parsed._userNotes as string)?.trim() || null;
+    } catch {}
+    // Legacy delimiter
+    const i = notes.indexOf("__GUEST__:");
+    const j = notes.indexOf("__END__");
+    if (i !== -1 && j !== -1) return notes.slice(j + 7).trim() || null;
+    // Oldest legacy
+    return notes.replace(/^\[Customer Email: [^\]]+\]\n?/, "").trim() || null;
   };
 
   const filteredOrders = orders.filter((o) => filter === "all" || o.orderStatus === filter);

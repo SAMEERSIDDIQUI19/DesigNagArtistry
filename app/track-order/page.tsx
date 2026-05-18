@@ -164,6 +164,18 @@ function TrackOrderContent() {
     doTrack(orderNumber);
   };
 
+  const getCustomerNotes = (notes: string | null) => {
+    if (!notes) return null;
+    try {
+      const parsed = JSON.parse(notes);
+      if (parsed?._guest) return (parsed._userNotes as string)?.trim() || null;
+    } catch {}
+    const i = notes.indexOf("__GUEST__:");
+    const j = notes.indexOf("__END__");
+    if (i !== -1 && j !== -1) return notes.slice(j + 7).trim() || null;
+    return notes.replace(/^\[Customer Email: [^\]]+\]\n?/, "").trim() || null;
+  };
+
   const currentStep = order ? STATUS_STEPS.indexOf(order.orderStatus) : -1;
   const isCancelled = order?.orderStatus === "cancelled";
 
@@ -365,10 +377,10 @@ function TrackOrderContent() {
             </div>
 
             {/* Notes */}
-            {order.notes && (
+            {getCustomerNotes(order.notes) && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5">
                 <h3 className="text-sm font-semibold text-yellow-800 mb-1">Order Notes</h3>
-                <p className="text-sm text-yellow-900">{order.notes}</p>
+                <p className="text-sm text-yellow-900">{getCustomerNotes(order.notes)}</p>
               </div>
             )}
 
