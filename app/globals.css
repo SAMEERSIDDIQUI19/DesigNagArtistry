@@ -49,6 +49,7 @@ body {
 /* Desktop explicit heights so absolute img has a container to fill */
 @media (min-width: 992px) {
   .banner-item-responsive { min-height: 480px; }
+  #billboard .banner-content .mt-3 { margin-top: 5rem !important; }
 }
 @media (min-width: 1024px) {
   .banner-item-responsive { min-height: 580px; }
