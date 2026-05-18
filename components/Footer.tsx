@@ -22,19 +22,16 @@ export default function Footer() {
                 <h5 className="widget-title pb-2">Quick Links</h5>
                 <ul className="menu-list list-unstyled text-capitalize">
                   <li className="menu-item pb-2">
-                    <Link href="#billboard">Home</Link>
+                    <Link href="/">Home</Link>
                   </li>
                   <li className="menu-item pb-2">
-                    <Link href="#about-us">About</Link>
+                    <Link href="/shop">Shop</Link>
                   </li>
                   <li className="menu-item pb-2">
-                    <Link href="#company-services">Services</Link>
+                    <Link href="/track-order">Track Order</Link>
                   </li>
                   <li className="menu-item pb-2">
-                    <Link href="#latest-blog">Blogs</Link>
-                  </li>
-                  <li className="menu-item pb-2">
-                    <Link href="#contact">Contact</Link>
+                    <Link href="/contact">Contact</Link>
                   </li>
                 </ul>
               </div>
