@@ -22,28 +22,19 @@ body {
   margin: 0;
 }
 
-/* ── Billboard: img fills banner on desktop, natural height on mobile ── */
-.banner-fill-img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
+/* ─────────────────────────────────────────────────
+   DESKTOP BILLBOARD — background-image + explicit heights
+   ───────────────────────────────────────────────── */
 
-/* Desktop explicit heights so absolute img has a container to fill */
-@media (min-width: 992px) {
-  .banner-item-responsive { min-height: 480px; }
-}
-@media (min-width: 1024px) {
-  .banner-item-responsive { min-height: 580px; }
-}
-@media (min-width: 1280px) {
-  .banner-item-responsive { min-height: 700px; }
-}
+/* The mobile-only img is ALWAYS hidden on desktop */
+.banner-mobile-img { display: none; }
+
+/* Desktop responsive heights (background-image fills these) */
+.banner-item-responsive { height: 300px; }
+@media (min-width: 480px)  { .banner-item-responsive { height: 420px; } }
+@media (min-width: 768px)  { .banner-item-responsive { height: 580px; } }
+@media (min-width: 1024px) { .banner-item-responsive { height: 720px; } }
+@media (min-width: 1280px) { .banner-item-responsive { height: 850px; } }
 
 /* ── Banner section: stack items on mobile ── */
 @media (max-width: 767px) {
@@ -64,15 +55,28 @@ body {
   }
 }
 
-/* ── Billboard mobile/tablet: image at natural proportions, no gradient ── */
+/* ─────────────────────────────────────────────────
+   MOBILE / TABLET BILLBOARD (≤991px)
+   — hide background-image, show <img> at natural size,
+     overlay banner-content, zero gradient
+   ───────────────────────────────────────────────── */
 @media (max-width: 991px) {
-  /* Image flows naturally — drives parent height; no zoom/crop */
-  .banner-fill-img {
-    position: static !important;
+  /* 1. Kill background-image so there is no zoom/crop */
+  .banner-item-responsive {
+    background-image: none !important;
     height: auto !important;
-    object-fit: unset !important;
+    position: relative;
+    overflow: hidden;
   }
-  /* banner-content overlays the img absolutely */
+
+  /* 2. Show the <img> at its natural proportions */
+  .banner-mobile-img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* 3. banner-content overlays the img with no shadow */
   #billboard .banner-content {
     position: absolute !important;
     top: 0 !important;
@@ -88,6 +92,8 @@ body {
     background: transparent !important;
     box-sizing: border-box !important;
   }
+
+  /* 4. Scale text to fit mobile viewport */
   #billboard .banner-content h2,
   #billboard .banner-content .display-2 {
     font-size: clamp(1.4rem, 5vw, 2.5rem) !important;
