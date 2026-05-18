@@ -22,21 +22,27 @@ body {
   margin: 0;
 }
 
-/* ── Responsive billboard height ── */
-.banner-item-responsive {
-  height: 300px;
+/* ── Billboard: img fills banner on desktop, natural height on mobile ── */
+.banner-fill-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
-@media (min-width: 480px) {
-  .banner-item-responsive { height: 420px; }
-}
-@media (min-width: 768px) {
-  .banner-item-responsive { height: 580px; }
+
+/* Desktop explicit heights so absolute img has a container to fill */
+@media (min-width: 992px) {
+  .banner-item-responsive { min-height: 480px; }
 }
 @media (min-width: 1024px) {
-  .banner-item-responsive { height: 720px; }
+  .banner-item-responsive { min-height: 580px; }
 }
 @media (min-width: 1280px) {
-  .banner-item-responsive { height: 850px; }
+  .banner-item-responsive { min-height: 700px; }
 }
 
 /* ── Banner section: stack items on mobile ── */
@@ -58,13 +64,15 @@ body {
   }
 }
 
-/* ── Billboard banner: full-width fix on mobile ── */
+/* ── Billboard mobile/tablet: image at natural proportions, no gradient ── */
 @media (max-width: 991px) {
-  .banner-item-responsive {
-    position: relative;
-    overflow: hidden;
+  /* Image flows naturally — drives parent height; no zoom/crop */
+  .banner-fill-img {
+    position: static !important;
+    height: auto !important;
+    object-fit: unset !important;
   }
-  /* banner-content fills entire banner-item absolutely */
+  /* banner-content overlays the img absolutely */
   #billboard .banner-content {
     position: absolute !important;
     top: 0 !important;
@@ -74,27 +82,24 @@ body {
     width: 100% !important;
     height: 100% !important;
     display: flex !important;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: column !important;
+    justify-content: center !important;
     padding: 1.5rem !important;
-    background: linear-gradient(to right, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.05)) !important;
+    background: transparent !important;
     box-sizing: border-box !important;
   }
   #billboard .banner-content h2,
   #billboard .banner-content .display-2 {
-    font-size: 1.4rem !important;
-    line-height: 1.25 !important;
+    font-size: clamp(1.4rem, 5vw, 2.5rem) !important;
+    line-height: 1.2 !important;
     white-space: normal !important;
     word-break: break-word !important;
-    max-width: 80% !important;
     overflow-wrap: break-word !important;
     color: #fff !important;
   }
   #billboard .banner-content p {
     font-size: 0.875rem !important;
-    max-width: 75% !important;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem !important;
     color: rgba(255,255,255,0.9) !important;
   }
 }
@@ -119,17 +124,9 @@ body {
   }
 }
 
-/* ── Billboard text scales on mobile ── */
+/* ── Padding scale on small screens ── */
 @media (max-width: 576px) {
-  .banner-content .display-2 {
-    font-size: 1.4rem !important;
-  }
-  .banner-content p {
-    font-size: 0.8rem !important;
-  }
-  .padding-large {
-    padding: 1.5rem;
-  }
+  .padding-large { padding: 1.5rem; }
 }
 
 /* ── Product store swipers: 2 up on mobile ── */
