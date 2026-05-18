@@ -41,6 +41,7 @@ export default function ShopPage() {
   const [sortBy, setSortBy] = useState<string>("newest");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Generate or get session ID for guest users
   const getSessionId = () => {
@@ -224,171 +225,170 @@ export default function ShopPage() {
     return result;
   };
 
+  const categoryPanel = (
+    <div className="space-y-1">
+      {categories.length > 0 ? (
+        categories.map((category) => renderCategoryTree(category))
+      ) : (
+        <p className="text-gray-500 text-sm">No categories available</p>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-gray-900 to-[#c37409] text-white py-16">
+      <div className="bg-gradient-to-r from-gray-900 to-[#c37409] text-white py-10 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold mb-4">Shop Our Collection</h1>
-          <p className="text-xl text-gray-300">Discover our latest fashion trends</p>
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">Shop Our Collection</h1>
+          <p className="text-sm sm:text-xl text-gray-300">Discover our latest fashion trends</p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-8">
-          <div className="flex gap-4 w-full md:w-auto">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+
+        {/* Filter Bar */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className="flex flex-1 gap-2">
             <input
               type="text"
               placeholder="Search products..."
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              className="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <select
               value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
             >
               <option value="">All Categories</option>
               {flattenCategories(categories).map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
+                <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
           </div>
-          <select
-            value={sortBy}
-            onChange={(e) => {
-              setSortBy(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="newest">Newest</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="name">Name</option>
-          </select>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden flex items-center gap-1.5 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
+              Filters
+            </button>
+            <select
+              value={sortBy}
+              onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+              className="flex-1 sm:flex-none px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="newest">Newest</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
         </div>
 
-        <div className="flex gap-8">
-          {/* Categories Sidebar */}
-          <div className="w-64 flex-shrink-0">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
-              {categories.length > 0 ? (
-                <div className="space-y-1">
-                  {categories.map((category) => renderCategoryTree(category))}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-sm">No categories available</p>
-              )}
-            </div>
+        {/* Mobile Sidebar (collapsible) */}
+        {sidebarOpen && (
+          <div className="lg:hidden mb-4 bg-white rounded-lg shadow-md p-4">
+            <h2 className="text-base font-semibold text-gray-900 mb-3">Categories</h2>
+            {categoryPanel}
           </div>
+        )}
+
+        <div className="flex gap-5 lg:gap-8">
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:block w-52 flex-shrink-0">
+            <div className="bg-white rounded-lg shadow-md p-5 sticky top-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
+              {categoryPanel}
+            </div>
+          </aside>
 
           {/* Products Grid */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {loading ? (
               <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                  <Link href={`/product/${product.slug}`}>
-                    <div className="relative h-64 bg-gray-200">
-                      {getProductImage(product) ? (
-                        <img
-                          src={getProductImage(product)}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          No Image
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {products.map((product) => (
+                    <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+                      <Link href={`/product/${product.slug}`}>
+                        <div className="relative h-40 sm:h-52 bg-gray-100">
+                          <img
+                            src={getProductImage(product)}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                          {product.isOnSale && (
+                            <span className="absolute top-1.5 left-1.5 bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-semibold">
+                              SALE
+                            </span>
+                          )}
                         </div>
-                      )}
-                      {product.isOnSale && (
-                        <span className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-sm font-semibold">
-                          SALE
-                        </span>
-                      )}
+                      </Link>
+                      <div className="p-2 sm:p-3 flex flex-col flex-1">
+                        {product.category && (
+                          <p className="text-xs text-gray-400 mb-0.5 truncate">{product.category.name}</p>
+                        )}
+                        <Link href={`/product/${product.slug}`}>
+                          <h3 className="font-semibold text-xs sm:text-sm text-gray-900 mb-1 sm:mb-2 hover:text-blue-600 line-clamp-2 leading-snug">
+                            {product.name}
+                          </h3>
+                        </Link>
+                        <div className="text-xs sm:text-sm mb-2 mt-auto">{displayPrice(product)}</div>
+                        <button
+                          onClick={() => handleAddToCart(product.id)}
+                          disabled={product.stock === 0 || product.status !== "active"}
+                          className="w-full bg-[#704204] text-white py-1.5 sm:py-2 px-2 rounded-lg hover:bg-[#8a5626] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
+                        >
+                          {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                        </button>
+                      </div>
                     </div>
-                  </Link>
-                  <div className="p-4">
-                    {product.category && (
-                      <p className="text-sm text-gray-500 mb-1">{product.category.name}</p>
-                    )}
-                    <Link href={`/product/${product.slug}`}>
-                      <h3 className="font-semibold text-gray-900 mb-2 hover:text-blue-600">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="text-lg">{displayPrice(product)}</div>
-                    </div>
+                  ))}
+                </div>
+
+                {products.length === 0 && (
+                  <div className="text-center py-12 text-gray-500">No products found</div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mt-6 sm:mt-8">
                     <button
-                      onClick={() => handleAddToCart(product.id)}
-                      disabled={product.stock === 0 || product.status !== "active"}
-                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                      Previous
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg ${
+                          currentPage === page ? "bg-[#704204] text-white border-[#704204]" : "hover:bg-gray-50"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {products.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                No products found
-              </div>
+                )}
+              </>
             )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-8">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-4 py-2 border border-gray-300 rounded-lg ${
-                      currentPage === page
-                        ? "bg-blue-600 text-white"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </>
-        )}
           </div>
         </div>
       </div>

@@ -293,7 +293,7 @@ export default function ProductDetailPage() {
                 {product.category.name}
               </Link>
             )}
-            <h1 className="text-3xl font-bold text-gray-900 mt-2 mb-4">
+            <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mt-2 mb-4">
               {product.name}
             </h1>
 
@@ -396,7 +396,7 @@ export default function ProductDetailPage() {
               {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
             </button>
 
-            <div className="mt-6 flex space-x-4">
+            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3 sm:space-x-4">
               <Link
                 href="/shop"
                 className="flex-1 text-center border border-gray-300 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors"

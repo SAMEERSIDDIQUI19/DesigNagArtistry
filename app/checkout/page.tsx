@@ -138,7 +138,7 @@ export default function CheckoutPage() {
         // Clear cart
         localStorage.removeItem("session_id");
         window.dispatchEvent(new Event('cartUpdate'));
-        router.push(`/order-success?orderId=${data.orderId}`);
+        router.push(`/order-success?orderId=${data.orderId}&orderNumber=${encodeURIComponent(data.orderNumber)}`);
       } else {
         const error = await response.json();
         alert(error.error || "Failed to place order");

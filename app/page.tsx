@@ -188,8 +188,8 @@ export default function Home() {
                 <div className="container-fluid">
                   <div className="row">
                     <div className="col-md-12">
-                      <div className="banner-item align-content-center"
-                        style={{ backgroundImage: `url(${slide.image})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right', height: '850px', backgroundSize: 'contain' }}>
+                      <div className="banner-item banner-item-responsive align-content-center"
+                        style={{ backgroundImage: `url(${slide.image})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center', backgroundSize: 'contain' }}>
                         <div className="banner-content padding-large">
                           <h2 className="display-2 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
                           <p>

@@ -168,9 +168,9 @@ export default function CartPage() {
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-lg shadow-md p-6 flex items-center gap-4"
+                  className="bg-white rounded-lg shadow-md p-3 sm:p-6 flex items-start sm:items-center gap-3 sm:gap-4"
                 >
-                  <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0">
+                  <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gray-200 rounded-lg flex-shrink-0">
                     {getProductImage(item.product) ? (
                       <img
                         src={getProductImage(item.product)}

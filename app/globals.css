@@ -21,3 +21,66 @@ body {
   color: var(--accent-color);
   margin: 0;
 }
+
+/* ── Responsive billboard height ── */
+.banner-item-responsive {
+  height: 300px;
+}
+@media (min-width: 480px) {
+  .banner-item-responsive { height: 420px; }
+}
+@media (min-width: 768px) {
+  .banner-item-responsive { height: 580px; }
+}
+@media (min-width: 1024px) {
+  .banner-item-responsive { height: 720px; }
+}
+@media (min-width: 1280px) {
+  .banner-item-responsive { height: 850px; }
+}
+
+/* ── Banner section: stack items on mobile ── */
+@media (max-width: 767px) {
+  #banner .row {
+    flex-direction: column;
+  }
+  #banner .col-md-4 {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+    margin-bottom: 1.25rem;
+  }
+  .banner-content-text {
+    padding: 0.75rem 1rem;
+  }
+  .banner-content-text .display-5 {
+    font-size: 1.4rem;
+  }
+}
+
+/* ── Billboard text scales on mobile ── */
+@media (max-width: 576px) {
+  .banner-content .display-2 {
+    font-size: 1.6rem;
+  }
+  .banner-content p {
+    font-size: 0.875rem;
+  }
+  .padding-large {
+    padding: 1.5rem;
+  }
+}
+
+/* ── Product store swipers: 2 up on mobile ── */
+@media (max-width: 767px) {
+  #featured-products .display-header,
+  #trending-products .display-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* ── Checkout order summary: full width on mobile ── */
+@media (max-width: 1023px) {
+  .sticky { position: relative; top: auto; }
+}

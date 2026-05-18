@@ -159,6 +159,15 @@ export default function Header() {
                       Shop
                     </Link>
                   </li>
+                  <li className="nav-item me-4">
+                    <Link 
+                      className="nav-link" 
+                      href="/track-order" 
+                      onClick={handleNavLinkClick}
+                    >
+                      Track Order
+                    </Link>
+                  </li>
                   {/* <li className="nav-item dropdown me-4">
                     <Link 
                       className="nav-link dropdown-toggle" 
@@ -227,6 +236,11 @@ export default function Header() {
               <li className="nav-item dropdown me-4">
                 <Link className="nav-link dropdown-toggle" href="/shop">
                   Shop
+                </Link>
+              </li>
+              <li className="nav-item me-4">
+                <Link className="nav-link" href="/track-order">
+                  Track Order
                 </Link>
               </li>
               {/* <li className="nav-item dropdown me-4">
