@@ -22,6 +22,18 @@ body {
   margin: 0;
 }
 
+/* ── Billboard: base container rules ── */
+.banner-item-responsive {
+  position: relative;
+  overflow: hidden;
+}
+
+/* banner-content must render above the img on all sizes */
+#billboard .banner-content {
+  position: relative;
+  z-index: 1;
+}
+
 /* ── Billboard: img fills banner on desktop, natural height on mobile ── */
 .banner-fill-img {
   position: absolute;
@@ -72,7 +84,7 @@ body {
     height: auto !important;
     object-fit: unset !important;
   }
-  /* banner-content overlays the img absolutely */
+  /* banner-content overlays the img absolutely on mobile */
   #billboard .banner-content {
     position: absolute !important;
     top: 0 !important;
@@ -83,10 +95,13 @@ body {
     height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
+    align-items: center !important;
     justify-content: center !important;
+    text-align: center !important;
     padding: 1.5rem !important;
-    background: transparent !important;
+    background: rgba(0,0,0,0.25) !important;
     box-sizing: border-box !important;
+    z-index: 1 !important;
   }
   #billboard .banner-content h2,
   #billboard .banner-content .display-2 {
