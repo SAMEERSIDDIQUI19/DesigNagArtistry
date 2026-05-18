@@ -12,6 +12,18 @@ interface BankAccount {
   isActive: boolean;
 }
 
+interface CardGateway {
+  id: string;
+  gatewayName: string;
+  displayName: string;
+  publicKey: string;
+  secretKey: string;
+  merchantId: string;
+  webhookSecret: string;
+  isTestMode: boolean;
+  isActive: boolean;
+}
+
 interface PaymentMethod {
   enabled: boolean;
   label: string;
@@ -24,6 +36,7 @@ interface PaymentSettings {
     card: PaymentMethod;
   };
   bankAccounts: BankAccount[];
+  cardGateways: CardGateway[];
 }
 
 const DEFAULT_SETTINGS: PaymentSettings = {
@@ -33,6 +46,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
     card: { enabled: false, label: "Card Payment" },
   },
   bankAccounts: [],
+  cardGateways: [],
 };
 
 const EMPTY_ACCOUNT: Omit<BankAccount, "id"> = {
@@ -44,6 +58,19 @@ const EMPTY_ACCOUNT: Omit<BankAccount, "id"> = {
   isActive: true,
 };
 
+const EMPTY_GATEWAY: Omit<CardGateway, "id"> = {
+  gatewayName: "Stripe",
+  displayName: "",
+  publicKey: "",
+  secretKey: "",
+  merchantId: "",
+  webhookSecret: "",
+  isTestMode: true,
+  isActive: true,
+};
+
+const GATEWAY_OPTIONS = ["Stripe", "PayFast", "JazzCash", "EasyPaisa", "Razorpay", "Square", "2Checkout", "Braintree", "Custom"];
+
 export default function PaymentSettingsPage() {
   const [settings, setSettings] = useState<PaymentSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -52,6 +79,9 @@ export default function PaymentSettingsPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newAccount, setNewAccount] = useState<Omit<BankAccount, "id">>(EMPTY_ACCOUNT);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showAddGateway, setShowAddGateway] = useState(false);
+  const [newGateway, setNewGateway] = useState<Omit<CardGateway, "id">>(EMPTY_GATEWAY);
+  const [editingGatewayId, setEditingGatewayId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -89,6 +119,57 @@ export default function PaymentSettingsPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const ensureCardGateways = (s: PaymentSettings): PaymentSettings => ({
+    ...s,
+    cardGateways: s.cardGateways ?? [],
+  });
+
+  const addGateway = () => {
+    if (!newGateway.displayName || !newGateway.publicKey) return;
+    const gateway: CardGateway = { ...newGateway, id: Date.now().toString() };
+    const updated = ensureCardGateways({ ...settings, cardGateways: [...(settings.cardGateways ?? []), gateway] });
+    setSettings(updated);
+    saveSettings(updated);
+    setNewGateway(EMPTY_GATEWAY);
+    setShowAddGateway(false);
+  };
+
+  const removeGateway = (id: string) => {
+    const updated = ensureCardGateways({ ...settings, cardGateways: settings.cardGateways.filter((g) => g.id !== id) });
+    setSettings(updated);
+    saveSettings(updated);
+  };
+
+  const toggleGatewayActive = (id: string) => {
+    const updated = ensureCardGateways({
+      ...settings,
+      cardGateways: settings.cardGateways.map((g) => g.id === id ? { ...g, isActive: !g.isActive } : g),
+    });
+    setSettings(updated);
+    saveSettings(updated);
+  };
+
+  const toggleGatewayTestMode = (id: string) => {
+    const updated = ensureCardGateways({
+      ...settings,
+      cardGateways: settings.cardGateways.map((g) => g.id === id ? { ...g, isTestMode: !g.isTestMode } : g),
+    });
+    setSettings(updated);
+    saveSettings(updated);
+  };
+
+  const updateEditingGateway = (id: string, field: keyof CardGateway, value: string) => {
+    setSettings((prev) => ensureCardGateways({
+      ...prev,
+      cardGateways: prev.cardGateways.map((g) => g.id === id ? { ...g, [field]: value } : g),
+    }));
+  };
+
+  const saveEditingGateway = () => {
+    saveSettings(settings);
+    setEditingGatewayId(null);
   };
 
   const toggleMethod = (key: keyof PaymentSettings["methods"]) => {
@@ -161,7 +242,7 @@ export default function PaymentSettingsPage() {
   const METHOD_DESC: Record<string, string> = {
     cod: "Customer pays in cash upon delivery.",
     bank_transfer: "Customer transfers money directly to your bank account.",
-    card: "Online card payment (not yet integrated).",
+    card: "Online card payment via configured payment gateway.",
   };
 
   return (
@@ -181,7 +262,6 @@ export default function PaymentSettingsPage() {
         <div className="space-y-4">
           {(Object.keys(settings.methods) as Array<keyof PaymentSettings["methods"]>).map((key) => {
             const method = settings.methods[key];
-            const isCard = key === "card";
             return (
               <div key={key} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                 <div className="flex items-center gap-3">
@@ -189,19 +269,14 @@ export default function PaymentSettingsPage() {
                   <div>
                     <p className="font-medium text-gray-900 text-sm">{method.label}</p>
                     <p className="text-xs text-gray-500">{METHOD_DESC[key]}</p>
-                    {isCard && (
-                      <span className="inline-block mt-1 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
-                        Coming Soon
-                      </span>
-                    )}
                   </div>
                 </div>
                 <button
-                  onClick={() => !isCard && toggleMethod(key)}
+                  onClick={() => toggleMethod(key)}
                   disabled={saving}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none cursor-pointer ${
                     method.enabled ? "bg-[#704204]" : "bg-gray-300"
-                  } ${isCard ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+                  }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -336,6 +411,165 @@ export default function PaymentSettingsPage() {
                       >
                         Remove
                       </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {/* Card Payment Gateways */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-1">
+          <div>
+            <h2 className="text-base font-semibold text-gray-800">Card Payment Gateways</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Configure your payment gateway credentials. Enable Card Payment above to activate at checkout.</p>
+          </div>
+          <button
+            onClick={() => setShowAddGateway(true)}
+            className="px-4 py-2 bg-[#704204] text-white text-sm font-medium rounded-lg hover:bg-[#8a5626] transition-colors"
+          >
+            + Add Gateway
+          </button>
+        </div>
+
+        {/* Add Gateway Form */}
+        {showAddGateway && (
+          <div className="mt-4 mb-5 bg-stone-50 border border-stone-200 rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-gray-800 mb-3">New Payment Gateway</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Gateway Provider *</label>
+                <select
+                  value={newGateway.gatewayName}
+                  onChange={(e) => setNewGateway((p) => ({ ...p, gatewayName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]"
+                >
+                  {GATEWAY_OPTIONS.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Display Name * <span className="text-gray-400 font-normal">(shown to customers)</span></label>
+                <input type="text" placeholder="e.g. Pay with Stripe" value={newGateway.displayName}
+                  onChange={(e) => setNewGateway((p) => ({ ...p, displayName: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Public / Publishable Key *</label>
+                <input type="text" placeholder="pk_test_..." value={newGateway.publicKey}
+                  onChange={(e) => setNewGateway((p) => ({ ...p, publicKey: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Secret Key</label>
+                <input type="password" placeholder="sk_test_..." value={newGateway.secretKey}
+                  onChange={(e) => setNewGateway((p) => ({ ...p, secretKey: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Merchant ID <span className="text-gray-400 font-normal">(if required)</span></label>
+                <input type="text" placeholder="e.g. MCHT-12345" value={newGateway.merchantId}
+                  onChange={(e) => setNewGateway((p) => ({ ...p, merchantId: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Webhook Secret <span className="text-gray-400 font-normal">(if required)</span></label>
+                <input type="password" placeholder="whsec_..." value={newGateway.webhookSecret}
+                  onChange={(e) => setNewGateway((p) => ({ ...p, webhookSecret: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                <input type="checkbox" checked={newGateway.isTestMode}
+                  onChange={(e) => setNewGateway((p) => ({ ...p, isTestMode: e.target.checked }))}
+                  className="w-4 h-4 accent-[#704204]" />
+                Test / Sandbox Mode
+              </label>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button onClick={addGateway}
+                disabled={!newGateway.displayName || !newGateway.publicKey || saving}
+                className="px-4 py-2 bg-[#704204] text-white text-sm font-medium rounded-lg hover:bg-[#8a5626] transition-colors disabled:opacity-50">
+                Save Gateway
+              </button>
+              <button onClick={() => { setShowAddGateway(false); setNewGateway(EMPTY_GATEWAY); }}
+                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Gateways List */}
+        {(settings.cardGateways ?? []).length === 0 ? (
+          <div className="text-center py-8 text-gray-400 text-sm mt-2">
+            No payment gateways configured yet.
+          </div>
+        ) : (
+          <div className="space-y-3 mt-4">
+            {(settings.cardGateways ?? []).map((gw) => (
+              <div key={gw.id} className={`border rounded-xl p-4 ${gw.isActive ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50 opacity-70"}`}>
+                {editingGatewayId === gw.id ? (
+                  <div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Gateway Provider</label>
+                        <select value={gw.gatewayName} onChange={(e) => updateEditingGateway(gw.id, "gatewayName", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]">
+                          {GATEWAY_OPTIONS.map((g) => <option key={g} value={g}>{g}</option>)}
+                        </select>
+                      </div>
+                      {(["displayName", "publicKey", "merchantId"] as const).map((field) => (
+                        <div key={field}>
+                          <label className="block text-xs font-medium text-gray-600 mb-1 capitalize">{field.replace(/([A-Z])/g, " $1")}</label>
+                          <input type="text" value={gw[field]} onChange={(e) => updateEditingGateway(gw.id, field, e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]" />
+                        </div>
+                      ))}
+                      {(["secretKey", "webhookSecret"] as const).map((field) => (
+                        <div key={field}>
+                          <label className="block text-xs font-medium text-gray-600 mb-1 capitalize">{field.replace(/([A-Z])/g, " $1")}</label>
+                          <input type="password" value={gw[field]} onChange={(e) => updateEditingGateway(gw.id, field, e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]" />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={saveEditingGateway} className="px-4 py-1.5 bg-[#704204] text-white text-sm rounded-lg hover:bg-[#8a5626]">Save</button>
+                      <button onClick={() => setEditingGatewayId(null)} className="px-4 py-1.5 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <p className="font-semibold text-gray-900 text-sm">{gw.gatewayName}</p>
+                        {gw.displayName && <span className="text-xs text-gray-500">· {gw.displayName}</span>}
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${gw.isActive ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-500"}`}>
+                          {gw.isActive ? "Active" : "Inactive"}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${gw.isTestMode ? "bg-yellow-100 text-yellow-700" : "bg-blue-100 text-blue-700"}`}>
+                          {gw.isTestMode ? "Test Mode" : "Live Mode"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 font-mono">{gw.publicKey ? `Public: ${gw.publicKey.slice(0, 20)}…` : "No public key set"}</p>
+                      {gw.merchantId && <p className="text-xs text-gray-500 mt-0.5">Merchant ID: {gw.merchantId}</p>}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                      <button onClick={() => toggleGatewayTestMode(gw.id)}
+                        className="text-xs px-2.5 py-1 border border-yellow-200 rounded-lg hover:bg-yellow-50 text-yellow-700">
+                        {gw.isTestMode ? "→ Live" : "→ Test"}
+                      </button>
+                      <button onClick={() => toggleGatewayActive(gw.id)}
+                        className="text-xs px-2.5 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                        {gw.isActive ? "Disable" : "Enable"}
+                      </button>
+                      <button onClick={() => setEditingGatewayId(gw.id)}
+                        className="text-xs px-2.5 py-1 border border-blue-200 rounded-lg hover:bg-blue-50 text-blue-600">Edit</button>
+                      <button onClick={() => removeGateway(gw.id)}
+                        className="text-xs px-2.5 py-1 border border-red-200 rounded-lg hover:bg-red-50 text-red-600">Remove</button>
                     </div>
                   </div>
                 )}

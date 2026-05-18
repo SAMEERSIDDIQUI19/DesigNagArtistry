@@ -7,6 +7,7 @@ const ORDER_INCLUDE = {
       variant: { select: { variantName: true, variantValue: true } },
     },
   },
+  payments: { select: { provider: true }, take: 1 },
   shippingAddress: {
     select: {
       fullName: true,
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
+      id: order.id,
       orderNumber: order.orderNumber,
       orderStatus: order.orderStatus,
       paymentStatus: order.paymentStatus,
@@ -53,6 +55,7 @@ export async function GET(request: NextRequest) {
       discount: order.discount,
       total: order.total,
       notes: order.notes,
+      paymentMethod: order.payments?.[0]?.provider ?? null,
       shippingAddress: order.shippingAddress
         ? {
             fullName: order.shippingAddress.fullName,

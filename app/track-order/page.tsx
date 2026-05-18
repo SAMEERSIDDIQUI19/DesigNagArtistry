@@ -11,10 +11,22 @@ interface TrackItem {
   variant: { variantName: string; variantValue: string } | null;
 }
 
+interface BankAccount {
+  id: string;
+  bankName: string;
+  accountTitle: string;
+  accountNumber: string;
+  iban: string;
+  branch: string;
+  isActive: boolean;
+}
+
 interface TrackedOrder {
+  id: string;
   orderNumber: string;
   orderStatus: string;
   paymentStatus: string;
+  paymentMethod: string | null;
   createdAt: string;
   subtotal: number;
   shippingFee: number;
@@ -53,21 +65,84 @@ function TrackOrderContent() {
   const [order, setOrder] = useState<TrackedOrder | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [existingProof, setExistingProof] = useState<{ imageUrl: string; uploadedAt: string } | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
 
   const doTrack = async (num: string) => {
     if (!num.trim()) return;
     setLoading(true);
     setError("");
     setOrder(null);
+    setExistingProof(null);
+    setProofFile(null);
+    setProofPreview(null);
+    setUploadSuccess(false);
     try {
       const res = await fetch(`/api/orders/track?orderNumber=${encodeURIComponent(num.trim())}`);
       const data = await res.json();
-      if (!res.ok) setError(data.error || "Something went wrong.");
-      else setOrder(data);
+      if (!res.ok) { setError(data.error || "Something went wrong."); return; }
+      setOrder(data);
+      // Fetch existing proof + payment settings in parallel
+      const [proofRes, settingsRes] = await Promise.all([
+        fetch(`/api/orders/payment-proof?orderId=${data.id}`),
+        data.paymentStatus === "pending" ? fetch("/api/payment-settings") : Promise.resolve(null),
+      ]);
+      if (proofRes.ok) {
+        const proof = await proofRes.json();
+        if (proof) setExistingProof(proof);
+      }
+      if (settingsRes?.ok) {
+        const ps = await settingsRes.json();
+        setBankAccounts((ps.bankAccounts ?? []).filter((a: BankAccount) => a.isActive));
+      }
     } catch {
       setError("Failed to connect. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError("");
+    const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif", "image/avif", "image/heic", "image/heif"];
+    if (!allowed.includes(file.type)) {
+      setUploadError("Only image files are accepted (JPG, PNG, WebP, GIF, AVIF).");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("File is too large. Maximum size is 10MB.");
+      return;
+    }
+    setProofFile(file);
+    setProofPreview(URL.createObjectURL(file));
+  };
+
+  const handleProofUpload = async () => {
+    if (!proofFile || !order) return;
+    setUploading(true);
+    setUploadError("");
+    try {
+      const fd = new FormData();
+      fd.append("orderId", order.id);
+      fd.append("image", proofFile);
+      const res = await fetch("/api/orders/payment-proof", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) { setUploadError(data.error || "Upload failed."); return; }
+      setExistingProof({ imageUrl: data.imageUrl, uploadedAt: new Date().toISOString() });
+      setProofFile(null);
+      setProofPreview(null);
+      setUploadSuccess(true);
+    } catch {
+      setUploadError("Failed to upload. Please try again.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -286,6 +361,150 @@ function TrackOrderContent() {
               <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5">
                 <h3 className="text-sm font-semibold text-yellow-800 mb-1">Order Notes</h3>
                 <p className="text-sm text-yellow-900">{order.notes}</p>
+              </div>
+            )}
+
+            {/* Pay Now Banner — only when pending */}
+            {order.paymentStatus === "pending" && (
+              <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-6">
+                <div className="flex items-start gap-3 mb-4">
+                  <span className="text-2xl">⚠️</span>
+                  <div>
+                    <h3 className="text-base font-bold text-amber-900">Payment Required</h3>
+                    <p className="text-sm text-amber-800 mt-0.5">
+                      Your order is reserved but <strong>not confirmed</strong> until payment is received.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-amber-200 px-4 py-3 mb-4 flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Amount Due</span>
+                  <span className="text-lg font-bold text-gray-900">Rs. {Number(order.total).toFixed(2)}</span>
+                </div>
+
+                {/* COD */}
+                {order.paymentMethod === "cod" && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-green-800 mb-1">💵 Cash on Delivery</p>
+                    <p className="text-sm text-green-700">You selected Cash on Delivery. Please keep Rs. {Number(order.total).toFixed(2)} ready when your order arrives.</p>
+                  </div>
+                )}
+
+                {/* Bank Transfer */}
+                {order.paymentMethod === "bank_transfer" && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800 mb-3">🏦 Transfer to one of these accounts and use your order number as the reference:</p>
+                    {bankAccounts.length === 0 ? (
+                      <p className="text-sm text-gray-500 italic">Please contact us for bank account details.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {bankAccounts.map((acc) => (
+                          <div key={acc.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                            <p className="font-semibold text-gray-900 text-sm">{acc.bankName}</p>
+                            <p className="text-sm text-gray-700">{acc.accountTitle}</p>
+                            <p className="text-sm font-mono text-gray-900 mt-1 select-all">{acc.accountNumber}</p>
+                            {acc.iban && <p className="text-xs text-gray-500 font-mono mt-0.5 select-all">IBAN: {acc.iban}</p>}
+                            {acc.branch && <p className="text-xs text-gray-500 mt-0.5">Branch: {acc.branch}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                      <p className="text-xs font-semibold text-blue-800">Reference / Description to include:</p>
+                      <p className="text-sm font-mono font-bold text-blue-900 mt-0.5 select-all">{order.orderNumber}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Card */}
+                {order.paymentMethod === "card" && (
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-purple-800 mb-1">💳 Card Payment</p>
+                    <p className="text-sm text-purple-700">Please contact us to complete your card payment.</p>
+                  </div>
+                )}
+
+                {/* Fallback */}
+                {!order.paymentMethod && bankAccounts.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800 mb-3">🏦 Pay via bank transfer:</p>
+                    <div className="space-y-3">
+                      {bankAccounts.map((acc) => (
+                        <div key={acc.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                          <p className="font-semibold text-gray-900 text-sm">{acc.bankName}</p>
+                          <p className="text-sm font-mono text-gray-900 select-all">{acc.accountNumber}</p>
+                          {acc.iban && <p className="text-xs text-gray-500 font-mono select-all">IBAN: {acc.iban}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Payment Proof Upload — only when pending */}
+            {order.paymentStatus === "pending" && (
+              <div className="bg-white rounded-2xl shadow-md p-6">
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1">Payment Proof</h3>
+                <p className="text-xs text-gray-500 mb-4">Upload a screenshot or photo of your payment receipt to help us verify your order faster.</p>
+
+                {/* Existing proof */}
+                {existingProof && (
+                  <div className="mb-5">
+                    <p className="text-xs text-gray-500 mb-2">
+                      Uploaded on {new Date(existingProof.uploadedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    </p>
+                    <img
+                      src={existingProof.imageUrl}
+                      alt="Payment proof"
+                      className="max-w-full max-h-64 rounded-xl border border-gray-200 object-contain"
+                    />
+                    <p className="text-xs text-gray-400 mt-2">You can replace this by uploading a new image below.</p>
+                  </div>
+                )}
+
+                {uploadSuccess && !existingProof && (
+                  <div className="mb-4 flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm font-medium">
+                    ✓ Payment proof uploaded successfully!
+                  </div>
+                )}
+
+                {/* Upload area */}
+                <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-[#704204] transition-colors bg-gray-50 hover:bg-amber-50">
+                  <span className="text-3xl">🖼️</span>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-700">{proofFile ? proofFile.name : "Click to choose an image"}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP, GIF — max 10MB</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/avif"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </label>
+
+                {/* Preview */}
+                {proofPreview && (
+                  <div className="mt-4">
+                    <p className="text-xs text-gray-500 mb-2">Preview:</p>
+                    <img src={proofPreview} alt="Preview" className="max-h-48 rounded-xl border border-gray-200 object-contain" />
+                  </div>
+                )}
+
+                {uploadError && (
+                  <p className="mt-3 text-sm text-red-600">{uploadError}</p>
+                )}
+
+                {proofFile && (
+                  <button
+                    onClick={handleProofUpload}
+                    disabled={uploading}
+                    className="mt-4 w-full py-3 bg-[#704204] text-white rounded-xl text-sm font-semibold hover:bg-[#8a5626] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {uploading ? "Uploading…" : "Submit Payment Proof"}
+                  </button>
+                )}
               </div>
             )}
 

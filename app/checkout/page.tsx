@@ -15,6 +15,15 @@ interface BankAccount {
   isActive: boolean;
 }
 
+interface CardGateway {
+  id: string;
+  gatewayName: string;
+  displayName: string;
+  publicKey: string;
+  isTestMode: boolean;
+  isActive: boolean;
+}
+
 interface PaymentSettings {
   methods: {
     cod: { enabled: boolean; label: string };
@@ -22,6 +31,7 @@ interface PaymentSettings {
     card: { enabled: boolean; label: string };
   };
   bankAccounts: BankAccount[];
+  cardGateways: CardGateway[];
 }
 
 interface CartItem {
@@ -304,12 +314,29 @@ export default function CheckoutPage() {
                     </button>
                   )}
 
-                  {/* Card — always shown but disabled */}
-                  <div className="relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed text-center">
-                    <span className="text-2xl">💳</span>
-                    <span className="text-sm font-medium text-gray-500">Card Payment</span>
-                    <span className="absolute -top-2 right-2 bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-0.5 rounded-full">Coming Soon</span>
-                  </div>
+                  {/* Card Payment */}
+                  {paymentSettings?.methods.card.enabled ? (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("card")}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${
+                        paymentMethod === "card"
+                          ? "border-[#704204] bg-amber-50"
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
+                    >
+                      <span className="text-2xl">💳</span>
+                      <span className="text-sm font-medium text-gray-800">
+                        {paymentSettings.cardGateways?.find((g) => g.isActive)?.displayName || "Card Payment"}
+                      </span>
+                    </button>
+                  ) : (
+                    <div className="relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed text-center">
+                      <span className="text-2xl">💳</span>
+                      <span className="text-sm font-medium text-gray-500">Card Payment</span>
+                      <span className="absolute -top-2 right-2 bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-0.5 rounded-full">Coming Soon</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Bank Details Panel */}

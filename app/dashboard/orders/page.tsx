@@ -38,6 +38,7 @@ interface OrderDetail extends Order {
     product: { thumbnail: string | null; slug: string } | null;
   }[];
   payments: { provider: string | null; status: string }[];
+  paymentProof: { imageUrl: string; uploadedAt: string } | null;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -356,6 +357,32 @@ export default function OrdersPage() {
                     <h3 className="text-sm font-semibold text-yellow-800 mb-1">Order Notes</h3>
                     <p className="text-sm text-yellow-900">{selectedOrder.notes}</p>
                   </div>
+                )}
+
+                {/* Payment Proof */}
+                {selectedOrder.paymentProof ? (
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-gray-800">💳 Payment Proof</h3>
+                      <span className="text-xs text-gray-400">
+                        {new Date(selectedOrder.paymentProof.uploadedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    <a href={selectedOrder.paymentProof.imageUrl} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={selectedOrder.paymentProof.imageUrl}
+                        alt="Payment proof"
+                        className="max-w-full max-h-72 rounded-lg border border-gray-100 object-contain hover:opacity-90 transition-opacity cursor-zoom-in"
+                      />
+                    </a>
+                    <p className="text-xs text-gray-400 mt-2">Click image to open full size</p>
+                  </div>
+                ) : (
+                  selectedOrder.paymentStatus === "pending" && (
+                    <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-4 text-center">
+                      <p className="text-sm text-gray-400">No payment proof uploaded yet.</p>
+                    </div>
+                  )
                 )}
 
               </div>

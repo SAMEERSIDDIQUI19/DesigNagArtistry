@@ -58,13 +58,51 @@ body {
   }
 }
 
+/* ── Billboard banner: fix full-height content layout on mobile ── */
+@media (max-width: 991px) {
+  #billboard .banner-content {
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1.5rem !important;
+    background-color: rgba(0, 0, 0, 0.25) !important;
+  }
+  .banner-item-responsive {
+    display: flex;
+    align-items: center;
+  }
+  #billboard .banner-content h2,
+  #billboard .banner-content .display-2 {
+    font-size: 1.5rem !important;
+    line-height: 1.3;
+  }
+  #billboard .banner-content p {
+    font-size: 0.875rem !important;
+    width: 100% !important;
+    margin-bottom: 1rem;
+  }
+}
+
+/* ── Button arrow: re-centre SVG on mobile ── */
+@media (max-width: 991px) {
+  .btn.btn-arrow svg {
+    top: 50% !important;
+    right: 18px !important;
+  }
+  .btn.btn-medium {
+    padding-right: 3rem !important;
+  }
+}
+
 /* ── Billboard text scales on mobile ── */
 @media (max-width: 576px) {
   .banner-content .display-2 {
-    font-size: 1.6rem;
+    font-size: 1.4rem !important;
   }
   .banner-content p {
-    font-size: 0.875rem;
+    font-size: 0.8rem !important;
   }
   .padding-large {
     padding: 1.5rem;

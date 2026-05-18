@@ -45,7 +45,28 @@ export async function GET(
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    return NextResponse.json(order);
+    // Fetch payment proof if exists
+    let paymentProof: { imageUrl: string; uploadedAt: string } | null = null;
+    try {
+      await prisma.$executeRaw`
+        CREATE TABLE IF NOT EXISTS payment_proofs (
+          id TEXT PRIMARY KEY,
+          order_id TEXT UNIQUE NOT NULL,
+          image_url TEXT NOT NULL,
+          uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `;
+      const rows = await prisma.$queryRaw<{ image_url: string; uploaded_at: string }[]>`
+        SELECT image_url, uploaded_at FROM payment_proofs WHERE order_id = ${id} LIMIT 1
+      `;
+      if (rows.length > 0) {
+        paymentProof = { imageUrl: rows[0].image_url, uploadedAt: String(rows[0].uploaded_at) };
+      }
+    } catch {
+      // Table may not exist yet — ignore
+    }
+
+    return NextResponse.json({ ...order, paymentProof });
   } catch (error) {
     console.error("Order detail fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
