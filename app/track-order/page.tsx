@@ -73,6 +73,8 @@ function TrackOrderContent() {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<Record<string, { enabled: boolean; label: string }>>({});
+  const [chosenMethod, setChosenMethod] = useState<string | null>(null);
+  const [showSelector, setShowSelector] = useState(false);
 
   const doTrack = async (num: string) => {
     if (!num.trim()) return;
@@ -83,11 +85,15 @@ function TrackOrderContent() {
     setProofFile(null);
     setProofPreview(null);
     setUploadSuccess(false);
+    setChosenMethod(null);
+    setShowSelector(false);
     try {
       const res = await fetch(`/api/orders/track?orderNumber=${encodeURIComponent(num.trim())}`);
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong."); return; }
       setOrder(data);
+      setChosenMethod(data.paymentMethod ?? null);
+      setShowSelector(!data.paymentMethod);
       // Fetch existing proof + payment settings in parallel
       const [proofRes, settingsRes] = await Promise.all([
         fetch(`/api/orders/payment-proof?orderId=${data.id}`),
@@ -366,9 +372,10 @@ function TrackOrderContent() {
               </div>
             )}
 
-            {/* Pay Now Banner — only when pending */}
+            {/* Pay Now — only when payment is pending */}
             {order.paymentStatus === "pending" && (
-              <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-6 space-y-5">
+              <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-6 space-y-4">
+
                 {/* Header */}
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">⚠️</span>
@@ -386,84 +393,145 @@ function TrackOrderContent() {
                   <span className="text-xl font-bold text-gray-900">Rs. {Number(order.total).toFixed(2)}</span>
                 </div>
 
-                <p className="text-sm font-semibold text-gray-800">Choose any of the following ways to pay:</p>
+                {/* ── METHOD SELECTOR ── */}
+                {showSelector && (
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-gray-800">Select how you would like to pay:</p>
 
-                {/* COD */}
-                {(paymentMethods.cod?.enabled || order.paymentMethod === "cod") && (
-                  <div className={`rounded-xl p-4 border ${
-                    order.paymentMethod === "cod"
-                      ? "bg-green-50 border-green-300"
-                      : "bg-white border-gray-200"
-                  }`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">💵</span>
-                      <p className="text-sm font-semibold text-gray-900">Cash on Delivery</p>
-                      {order.paymentMethod === "cod" && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Your choice</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 pl-7">Keep <strong>Rs. {Number(order.total).toFixed(2)}</strong> ready when your order is delivered.</p>
-                  </div>
-                )}
-
-                {/* Bank Transfer */}
-                {(paymentMethods.bank_transfer?.enabled || order.paymentMethod === "bank_transfer") && (
-                  <div className={`rounded-xl p-4 border ${
-                    order.paymentMethod === "bank_transfer"
-                      ? "bg-blue-50 border-blue-300"
-                      : "bg-white border-gray-200"
-                  }`}>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg">🏦</span>
-                      <p className="text-sm font-semibold text-gray-900">Bank Transfer</p>
-                      {order.paymentMethod === "bank_transfer" && (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Your choice</span>
-                      )}
-                    </div>
-                    {bankAccounts.length === 0 ? (
-                      <p className="text-sm text-gray-500 italic pl-7">Please contact us for bank account details.</p>
-                    ) : (
-                      <div className="space-y-2 pl-7">
-                        {bankAccounts.map((acc) => (
-                          <div key={acc.id} className="bg-white border border-gray-200 rounded-lg p-3">
-                            <p className="font-semibold text-gray-900 text-sm">{acc.bankName}</p>
-                            <p className="text-xs text-gray-500">{acc.accountTitle}</p>
-                            <p className="text-sm font-mono font-bold text-gray-900 mt-1 select-all tracking-wide">{acc.accountNumber}</p>
-                            {acc.iban && <p className="text-xs text-gray-500 font-mono mt-0.5 select-all">IBAN: {acc.iban}</p>}
-                            {acc.branch && <p className="text-xs text-gray-400 mt-0.5">Branch: {acc.branch}</p>}
+                    {/* COD option */}
+                    {(paymentMethods.cod?.enabled || order.paymentMethod === "cod") && (
+                      <button
+                        onClick={() => { setChosenMethod("cod"); setShowSelector(false); }}
+                        className="w-full text-left rounded-xl p-4 border-2 border-gray-200 bg-white hover:border-green-400 hover:bg-green-50 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">💵</span>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">Cash on Delivery</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Pay when your order arrives</p>
                           </div>
-                        ))}
-                        <div className="bg-blue-100 border border-blue-200 rounded-lg px-3 py-2 mt-1">
-                          <p className="text-xs font-semibold text-blue-800">Use this as your payment reference / description:</p>
-                          <p className="text-sm font-mono font-bold text-blue-900 mt-0.5 select-all">{order.orderNumber}</p>
                         </div>
-                      </div>
+                      </button>
+                    )}
+
+                    {/* Bank Transfer option */}
+                    {(paymentMethods.bank_transfer?.enabled || order.paymentMethod === "bank_transfer") && (
+                      <button
+                        onClick={() => { setChosenMethod("bank_transfer"); setShowSelector(false); }}
+                        className="w-full text-left rounded-xl p-4 border-2 border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">🏦</span>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">Bank Transfer</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Transfer to our bank account</p>
+                          </div>
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Card option */}
+                    {(paymentMethods.card?.enabled || order.paymentMethod === "card") && (
+                      <button
+                        onClick={() => { setChosenMethod("card"); setShowSelector(false); }}
+                        className="w-full text-left rounded-xl p-4 border-2 border-gray-200 bg-white hover:border-purple-400 hover:bg-purple-50 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">💳</span>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">Card Payment</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Pay securely by card</p>
+                          </div>
+                        </div>
+                      </button>
                     )}
                   </div>
                 )}
 
-                {/* Card */}
-                {(paymentMethods.card?.enabled || order.paymentMethod === "card") && (
-                  <div className={`rounded-xl p-4 border ${
-                    order.paymentMethod === "card"
-                      ? "bg-purple-50 border-purple-300"
-                      : "bg-white border-gray-200"
-                  }`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">💳</span>
-                      <p className="text-sm font-semibold text-gray-900">Card Payment</p>
-                      {order.paymentMethod === "card" && (
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Your choice</span>
-                      )}
+                {/* ── COD CONFIRMED ── */}
+                {!showSelector && chosenMethod === "cod" && (
+                  <div className="space-y-3">
+                    <div className="bg-green-50 border border-green-300 rounded-xl p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xl">✅</span>
+                        <p className="text-sm font-semibold text-green-800">Cash on Delivery selected</p>
+                      </div>
+                      <p className="text-sm text-green-700 pl-9">
+                        Please keep <strong>Rs. {Number(order.total).toFixed(2)}</strong> ready when your order is delivered. No action needed right now.
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600 pl-7">Please contact us to complete your card payment.</p>
+                    <button
+                      onClick={() => setShowSelector(true)}
+                      className="text-xs text-[#704204] underline underline-offset-2 hover:text-[#8a5626] font-medium"
+                    >
+                      ↩ Choose a different payment method
+                    </button>
                   </div>
                 )}
+
+                {/* ── BANK TRANSFER CONFIRMED ── */}
+                {!showSelector && chosenMethod === "bank_transfer" && (
+                  <div className="space-y-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">🏦</span>
+                        <p className="text-sm font-semibold text-blue-900">Bank Transfer</p>
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Selected</span>
+                      </div>
+                      {bankAccounts.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic pl-7">Please contact us for bank account details.</p>
+                      ) : (
+                        <div className="space-y-2 pl-7">
+                          {bankAccounts.map((acc) => (
+                            <div key={acc.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                              <p className="font-semibold text-gray-900 text-sm">{acc.bankName}</p>
+                              <p className="text-xs text-gray-500">{acc.accountTitle}</p>
+                              <p className="text-sm font-mono font-bold text-gray-900 mt-1 select-all tracking-wide">{acc.accountNumber}</p>
+                              {acc.iban && <p className="text-xs text-gray-500 font-mono mt-0.5 select-all">IBAN: {acc.iban}</p>}
+                              {acc.branch && <p className="text-xs text-gray-400 mt-0.5">Branch: {acc.branch}</p>}
+                            </div>
+                          ))}
+                          <div className="bg-blue-100 border border-blue-200 rounded-lg px-3 py-2">
+                            <p className="text-xs font-semibold text-blue-800">Use this as your payment reference:</p>
+                            <p className="text-sm font-mono font-bold text-blue-900 mt-0.5 select-all">{order.orderNumber}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setShowSelector(true)}
+                      className="text-xs text-[#704204] underline underline-offset-2 hover:text-[#8a5626] font-medium"
+                    >
+                      ↩ Choose a different payment method
+                    </button>
+                  </div>
+                )}
+
+                {/* ── CARD CONFIRMED ── */}
+                {!showSelector && chosenMethod === "card" && (
+                  <div className="space-y-3">
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xl">💳</span>
+                        <p className="text-sm font-semibold text-purple-800">Card Payment selected</p>
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Selected</span>
+                      </div>
+                      <p className="text-sm text-purple-700 pl-9">Please contact us to complete your card payment. Upload your payment confirmation below once done.</p>
+                    </div>
+                    <button
+                      onClick={() => setShowSelector(true)}
+                      className="text-xs text-[#704204] underline underline-offset-2 hover:text-[#8a5626] font-medium"
+                    >
+                      ↩ Choose a different payment method
+                    </button>
+                  </div>
+                )}
+
               </div>
             )}
 
-            {/* Payment Proof Upload — only when pending */}
-            {order.paymentStatus === "pending" && (
+            {/* Payment Proof Upload — only for bank_transfer or card when pending */}
+            {order.paymentStatus === "pending" && (chosenMethod === "bank_transfer" || chosenMethod === "card") && !showSelector && (
               <div className="bg-white rounded-2xl shadow-md p-6">
                 <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1">Payment Proof</h3>
                 <p className="text-xs text-gray-500 mb-4">Upload a screenshot or photo of your payment receipt to help us verify your order faster.</p>
