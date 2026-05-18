@@ -34,9 +34,10 @@ interface OrderDetail extends Order {
     quantity: number;
     price: number;
     total: number;
-    variant: { size: string | null; color: string | null } | null;
+    variant: { variantName: string; variantValue: string } | null;
     product: { thumbnail: string | null; slug: string } | null;
   }[];
+  payments: { provider: string | null; status: string }[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -247,6 +248,11 @@ export default function OrdersPage() {
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${selectedOrder.paymentStatus === "paid" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
                     Payment: {selectedOrder.paymentStatus}
                   </span>
+                  {selectedOrder.payments?.[0]?.provider && (
+                    <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-50 text-blue-700">
+                      {selectedOrder.payments[0].provider}
+                    </span>
+                  )}
                   <select
                     value={selectedOrder.orderStatus}
                     onChange={(e) => handleStatusChange(selectedOrder.id, e.target.value)}
@@ -310,7 +316,7 @@ export default function OrdersPage() {
                           <p className="font-medium text-sm text-gray-900 truncate">{item.productName}</p>
                           {item.variant && (
                             <p className="text-xs text-gray-500">
-                              {[item.variant.size && `Size: ${item.variant.size}`, item.variant.color && `Color: ${item.variant.color}`].filter(Boolean).join(" · ")}
+                              {`${item.variant.variantName}: ${item.variant.variantValue}`}
                             </p>
                           )}
                           <p className="text-xs text-gray-500">Qty: {item.quantity} × Rs. {Number(item.price).toFixed(2)}</p>

@@ -5,6 +5,25 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getPrimaryThumbnail } from "@/lib/thumbnail-utils";
 
+interface BankAccount {
+  id: string;
+  bankName: string;
+  accountTitle: string;
+  accountNumber: string;
+  iban: string;
+  branch: string;
+  isActive: boolean;
+}
+
+interface PaymentSettings {
+  methods: {
+    cod: { enabled: boolean; label: string };
+    bank_transfer: { enabled: boolean; label: string };
+    card: { enabled: boolean; label: string };
+  };
+  bankAccounts: BankAccount[];
+}
+
 interface CartItem {
   id: string;
   quantity: number;
@@ -39,6 +58,8 @@ export default function CheckoutPage() {
     notes: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "bank_transfer" | "card">("cod");
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
 
   // Generate or get session ID for guest users
   const getSessionId = () => {
@@ -52,7 +73,15 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     fetchCart();
+    fetchPaymentSettings();
   }, []);
+
+  const fetchPaymentSettings = async () => {
+    try {
+      const res = await fetch("/api/payment-settings");
+      if (res.ok) setPaymentSettings(await res.json());
+    } catch {}
+  };
 
   const fetchCart = async () => {
     setLoading(true);
@@ -130,6 +159,7 @@ export default function CheckoutPage() {
           shippingFee,
           total,
           cartItems,
+          paymentMethod,
         }),
       });
 
@@ -236,7 +266,79 @@ export default function CheckoutPage() {
           {/* Checkout Form */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Guest Checkout</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Guest Checkout</h2>
+
+              {/* Payment Method Selection */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Payment Method</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Cash on Delivery */}
+                  {paymentSettings?.methods.cod.enabled !== false && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("cod")}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${
+                        paymentMethod === "cod"
+                          ? "border-[#704204] bg-amber-50"
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
+                    >
+                      <span className="text-2xl">💵</span>
+                      <span className="text-sm font-medium text-gray-800">Cash on Delivery</span>
+                    </button>
+                  )}
+
+                  {/* Bank Transfer */}
+                  {paymentSettings?.methods.bank_transfer.enabled !== false && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("bank_transfer")}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${
+                        paymentMethod === "bank_transfer"
+                          ? "border-[#704204] bg-amber-50"
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
+                    >
+                      <span className="text-2xl">🏦</span>
+                      <span className="text-sm font-medium text-gray-800">Bank Transfer</span>
+                    </button>
+                  )}
+
+                  {/* Card — always shown but disabled */}
+                  <div className="relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed text-center">
+                    <span className="text-2xl">💳</span>
+                    <span className="text-sm font-medium text-gray-500">Card Payment</span>
+                    <span className="absolute -top-2 right-2 bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-0.5 rounded-full">Coming Soon</span>
+                  </div>
+                </div>
+
+                {/* Bank Details Panel */}
+                {paymentMethod === "bank_transfer" && paymentSettings && (
+                  <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-blue-800 mb-3">Transfer to one of the following accounts and include your order number in the reference:</p>
+                    {paymentSettings.bankAccounts.filter((a) => a.isActive).length === 0 ? (
+                      <p className="text-sm text-blue-600 italic">Bank account details will be provided after order placement. Please contact us.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {paymentSettings.bankAccounts
+                          .filter((a) => a.isActive)
+                          .map((account) => (
+                            <div key={account.id} className="bg-white rounded-lg p-3 border border-blue-100">
+                              <p className="font-semibold text-gray-900 text-sm">{account.bankName}</p>
+                              <div className="mt-1 space-y-0.5 text-sm text-gray-700">
+                                <p><span className="text-gray-500">Account Title:</span> {account.accountTitle}</p>
+                                <p><span className="text-gray-500">Account No:</span> <span className="font-mono font-medium">{account.accountNumber}</span></p>
+                                {account.iban && <p><span className="text-gray-500">IBAN:</span> <span className="font-mono">{account.iban}</span></p>}
+                                {account.branch && <p><span className="text-gray-500">Branch:</span> {account.branch}</p>}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <form onSubmit={handleSubmit}>
                 <div className="space-y-4">
                   <div>

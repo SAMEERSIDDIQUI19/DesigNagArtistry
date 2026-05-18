@@ -1,33 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: NextRequest) {
-  const orderNumber = request.nextUrl.searchParams.get("orderNumber")?.trim().toUpperCase();
+const ORDER_INCLUDE = {
+  items: {
+    include: {
+      variant: { select: { variantName: true, variantValue: true } },
+    },
+  },
+  shippingAddress: {
+    select: {
+      fullName: true,
+      city: true,
+      area: true,
+      country: true,
+      addressLine: true,
+    },
+  },
+} as const;
 
-  if (!orderNumber) {
+export async function GET(request: NextRequest) {
+  const query = request.nextUrl.searchParams.get("orderNumber")?.trim();
+
+  if (!query) {
     return NextResponse.json({ error: "Order number is required" }, { status: 400 });
   }
 
   try {
-    const order = await prisma.order.findUnique({
-      where: { orderNumber },
-      include: {
-        items: {
-          include: {
-            variant: { select: { size: true, color: true } },
-          },
-        },
-        shippingAddress: {
-          select: {
-            fullName: true,
-            city: true,
-            area: true,
-            country: true,
-            addressLine: true,
-          },
-        },
-      },
+    // Try by orderNumber first, then fall back to id (UUID)
+    let order = await prisma.order.findUnique({
+      where: { orderNumber: query.toUpperCase() },
+      include: ORDER_INCLUDE,
     });
+
+    if (!order) {
+      order = await prisma.order.findUnique({
+        where: { id: query },
+        include: ORDER_INCLUDE,
+      });
+    }
 
     if (!order) {
       return NextResponse.json({ error: "Order not found. Please check your order number and try again." }, { status: 404 });
@@ -58,7 +68,7 @@ export async function GET(request: NextRequest) {
         price: Number(item.price),
         total: Number(item.total),
         variant: item.variant
-          ? { size: item.variant.size, color: item.variant.color }
+          ? { variantName: item.variant.variantName, variantValue: item.variant.variantValue }
           : null,
       })),
     });

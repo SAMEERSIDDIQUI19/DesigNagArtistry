@@ -34,7 +34,7 @@ export async function GET(
         items: {
           include: {
             product: { select: { thumbnail: true, slug: true } },
-            variant: { select: { size: true, color: true } },
+            variant: { select: { variantName: true, variantValue: true } },
           },
         },
         payments: true,

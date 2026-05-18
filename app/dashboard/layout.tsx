@@ -13,6 +13,7 @@ const menuItems = [
   { name: "Categories", href: "/dashboard/categories", icon: "🏷️" },
   { name: "Reviews", href: "/dashboard/reviews", icon: "⭐" },
   { name: "Coupons", href: "/dashboard/coupons", icon: "🎟️" },
+  { name: "Payment Settings", href: "/dashboard/payment-settings", icon: "💳" },
 ];
 
 export default function DashboardLayout({

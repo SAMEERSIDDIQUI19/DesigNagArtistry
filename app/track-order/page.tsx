@@ -8,7 +8,7 @@ interface TrackItem {
   quantity: number;
   price: number;
   total: number;
-  variant: { size: string | null; color: string | null } | null;
+  variant: { variantName: string; variantValue: string } | null;
 }
 
 interface TrackedOrder {
@@ -222,12 +222,7 @@ function TrackOrderContent() {
                       <p className="font-medium text-sm text-gray-900">{item.productName}</p>
                       {item.variant && (
                         <p className="text-xs text-gray-500 mt-0.5">
-                          {[
-                            item.variant.size && `Size: ${item.variant.size}`,
-                            item.variant.color && `Color: ${item.variant.color}`,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
+                          {`${item.variant.variantName}: ${item.variant.variantValue}`}
                         </p>
                       )}
                       <p className="text-xs text-gray-500 mt-0.5">

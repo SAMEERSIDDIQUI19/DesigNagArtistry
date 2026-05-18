@@ -189,7 +189,7 @@ export default function Home() {
                   <div className="row">
                     <div className="col-md-12">
                       <div className="banner-item banner-item-responsive align-content-center"
-                        style={{ backgroundImage: `url(${slide.image})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center', backgroundSize: 'contain' }}>
+                        style={{ backgroundImage: `url(${slide.image})`, backgroundPosition: 'center center', backgroundSize: 'cover' }}>
                         <div className="banner-content padding-large">
                           <h2 className="display-2 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
                           <p>
@@ -408,7 +408,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="row g-3 post-grid">
+          {/* <div className="row g-3 post-grid">
             {[1, 2, 3].map((item) => (
               <div className="col-lg-4 col-md-6 col-sm-12 mb-5" key={item}>
                 <div className="card-item">
@@ -430,7 +430,7 @@ export default function Home() {
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
     </>

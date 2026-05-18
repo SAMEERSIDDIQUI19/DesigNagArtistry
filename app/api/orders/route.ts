@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       shippingFee,
       total,
       cartItems,
+      paymentMethod,
     } = body;
 
     console.log("Creating order for guest:", { sessionId, fullName, total });
@@ -60,6 +61,18 @@ export async function POST(request: NextRequest) {
           quantity: item.quantity,
           price: finalPrice,
           total: finalPrice * item.quantity,
+        },
+      });
+    }
+
+    // Record payment method
+    if (paymentMethod) {
+      await prisma.payment.create({
+        data: {
+          orderId: order.id,
+          provider: paymentMethod === "cod" ? "Cash on Delivery" : paymentMethod === "bank_transfer" ? "Bank Transfer" : "Card",
+          amount: total,
+          status: "pending",
         },
       });
     }

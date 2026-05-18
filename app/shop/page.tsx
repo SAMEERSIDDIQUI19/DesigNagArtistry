@@ -318,7 +318,7 @@ export default function ShopPage() {
                   {products.map((product) => (
                     <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
                       <Link href={`/product/${product.slug}`}>
-                        <div className="relative h-40 sm:h-52 bg-gray-100">
+                        <div className="relative aspect-square sm:h-52 bg-gray-100">
                           <img
                             src={getProductImage(product)}
                             alt={product.name}
@@ -336,7 +336,7 @@ export default function ShopPage() {
                           <p className="text-xs text-gray-400 mb-0.5 truncate">{product.category.name}</p>
                         )}
                         <Link href={`/product/${product.slug}`}>
-                          <h3 className="font-semibold text-xs sm:text-sm text-gray-900 mb-1 sm:mb-2 hover:text-blue-600 line-clamp-2 leading-snug">
+                          <h3 className="font-semibold text-xs sm:text-sm text-gray-900 mb-1 sm:mb-2 hover:text-blue-600 line-clamp-1 sm:line-clamp-2 leading-snug">
                             {product.name}
                           </h3>
                         </Link>
