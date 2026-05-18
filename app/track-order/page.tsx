@@ -72,6 +72,7 @@ function TrackOrderContent() {
   const [existingProof, setExistingProof] = useState<{ imageUrl: string; uploadedAt: string } | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<Record<string, { enabled: boolean; label: string }>>({});
 
   const doTrack = async (num: string) => {
     if (!num.trim()) return;
@@ -99,6 +100,7 @@ function TrackOrderContent() {
       if (settingsRes?.ok) {
         const ps = await settingsRes.json();
         setBankAccounts((ps.bankAccounts ?? []).filter((a: BankAccount) => a.isActive));
+        setPaymentMethods(ps.methods ?? {});
       }
     } catch {
       setError("Failed to connect. Please try again.");
@@ -366,8 +368,9 @@ function TrackOrderContent() {
 
             {/* Pay Now Banner — only when pending */}
             {order.paymentStatus === "pending" && (
-              <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-6">
-                <div className="flex items-start gap-3 mb-4">
+              <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-6 space-y-5">
+                {/* Header */}
+                <div className="flex items-start gap-3">
                   <span className="text-2xl">⚠️</span>
                   <div>
                     <h3 className="text-base font-bold text-amber-900">Payment Required</h3>
@@ -377,66 +380,83 @@ function TrackOrderContent() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl border border-amber-200 px-4 py-3 mb-4 flex items-center justify-between">
+                {/* Amount due */}
+                <div className="bg-white rounded-xl border border-amber-200 px-4 py-3 flex items-center justify-between">
                   <span className="text-sm text-gray-600">Amount Due</span>
-                  <span className="text-lg font-bold text-gray-900">Rs. {Number(order.total).toFixed(2)}</span>
+                  <span className="text-xl font-bold text-gray-900">Rs. {Number(order.total).toFixed(2)}</span>
                 </div>
 
+                <p className="text-sm font-semibold text-gray-800">Choose any of the following ways to pay:</p>
+
                 {/* COD */}
-                {order.paymentMethod === "cod" && (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-green-800 mb-1">💵 Cash on Delivery</p>
-                    <p className="text-sm text-green-700">You selected Cash on Delivery. Please keep Rs. {Number(order.total).toFixed(2)} ready when your order arrives.</p>
+                {(paymentMethods.cod?.enabled || order.paymentMethod === "cod") && (
+                  <div className={`rounded-xl p-4 border ${
+                    order.paymentMethod === "cod"
+                      ? "bg-green-50 border-green-300"
+                      : "bg-white border-gray-200"
+                  }`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">💵</span>
+                      <p className="text-sm font-semibold text-gray-900">Cash on Delivery</p>
+                      {order.paymentMethod === "cod" && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Your choice</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 pl-7">Keep <strong>Rs. {Number(order.total).toFixed(2)}</strong> ready when your order is delivered.</p>
                   </div>
                 )}
 
                 {/* Bank Transfer */}
-                {order.paymentMethod === "bank_transfer" && (
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800 mb-3">🏦 Transfer to one of these accounts and use your order number as the reference:</p>
+                {(paymentMethods.bank_transfer?.enabled || order.paymentMethod === "bank_transfer") && (
+                  <div className={`rounded-xl p-4 border ${
+                    order.paymentMethod === "bank_transfer"
+                      ? "bg-blue-50 border-blue-300"
+                      : "bg-white border-gray-200"
+                  }`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg">🏦</span>
+                      <p className="text-sm font-semibold text-gray-900">Bank Transfer</p>
+                      {order.paymentMethod === "bank_transfer" && (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Your choice</span>
+                      )}
+                    </div>
                     {bankAccounts.length === 0 ? (
-                      <p className="text-sm text-gray-500 italic">Please contact us for bank account details.</p>
+                      <p className="text-sm text-gray-500 italic pl-7">Please contact us for bank account details.</p>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="space-y-2 pl-7">
                         {bankAccounts.map((acc) => (
-                          <div key={acc.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div key={acc.id} className="bg-white border border-gray-200 rounded-lg p-3">
                             <p className="font-semibold text-gray-900 text-sm">{acc.bankName}</p>
-                            <p className="text-sm text-gray-700">{acc.accountTitle}</p>
-                            <p className="text-sm font-mono text-gray-900 mt-1 select-all">{acc.accountNumber}</p>
+                            <p className="text-xs text-gray-500">{acc.accountTitle}</p>
+                            <p className="text-sm font-mono font-bold text-gray-900 mt-1 select-all tracking-wide">{acc.accountNumber}</p>
                             {acc.iban && <p className="text-xs text-gray-500 font-mono mt-0.5 select-all">IBAN: {acc.iban}</p>}
-                            {acc.branch && <p className="text-xs text-gray-500 mt-0.5">Branch: {acc.branch}</p>}
+                            {acc.branch && <p className="text-xs text-gray-400 mt-0.5">Branch: {acc.branch}</p>}
                           </div>
                         ))}
+                        <div className="bg-blue-100 border border-blue-200 rounded-lg px-3 py-2 mt-1">
+                          <p className="text-xs font-semibold text-blue-800">Use this as your payment reference / description:</p>
+                          <p className="text-sm font-mono font-bold text-blue-900 mt-0.5 select-all">{order.orderNumber}</p>
+                        </div>
                       </div>
                     )}
-                    <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
-                      <p className="text-xs font-semibold text-blue-800">Reference / Description to include:</p>
-                      <p className="text-sm font-mono font-bold text-blue-900 mt-0.5 select-all">{order.orderNumber}</p>
-                    </div>
                   </div>
                 )}
 
                 {/* Card */}
-                {order.paymentMethod === "card" && (
-                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-purple-800 mb-1">💳 Card Payment</p>
-                    <p className="text-sm text-purple-700">Please contact us to complete your card payment.</p>
-                  </div>
-                )}
-
-                {/* Fallback */}
-                {!order.paymentMethod && bankAccounts.length > 0 && (
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800 mb-3">🏦 Pay via bank transfer:</p>
-                    <div className="space-y-3">
-                      {bankAccounts.map((acc) => (
-                        <div key={acc.id} className="bg-white border border-gray-200 rounded-xl p-4">
-                          <p className="font-semibold text-gray-900 text-sm">{acc.bankName}</p>
-                          <p className="text-sm font-mono text-gray-900 select-all">{acc.accountNumber}</p>
-                          {acc.iban && <p className="text-xs text-gray-500 font-mono select-all">IBAN: {acc.iban}</p>}
-                        </div>
-                      ))}
+                {(paymentMethods.card?.enabled || order.paymentMethod === "card") && (
+                  <div className={`rounded-xl p-4 border ${
+                    order.paymentMethod === "card"
+                      ? "bg-purple-50 border-purple-300"
+                      : "bg-white border-gray-200"
+                  }`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">💳</span>
+                      <p className="text-sm font-semibold text-gray-900">Card Payment</p>
+                      {order.paymentMethod === "card" && (
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Your choice</span>
+                      )}
                     </div>
+                    <p className="text-sm text-gray-600 pl-7">Please contact us to complete your card payment.</p>
                   </div>
                 )}
               </div>
