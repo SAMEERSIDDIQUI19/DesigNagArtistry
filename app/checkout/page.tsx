@@ -59,6 +59,7 @@ export default function CheckoutPage() {
   const [isGuest, setIsGuest] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
+    email: "",
     phone: "",
     country: "",
     city: "",
@@ -138,6 +139,16 @@ export default function CheckoutPage() {
 
     return '/images/placeholder.jpg';
   };
+
+  const isFormComplete =
+    !!formData.fullName.trim() &&
+    !!formData.email.trim() &&
+    !!formData.phone.trim() &&
+    !!formData.country.trim() &&
+    !!formData.city.trim() &&
+    !!formData.area.trim() &&
+    !!formData.postalCode.trim() &&
+    !!formData.addressLine.trim();
 
   const subtotal = cartItems.reduce((sum, item) => {
     return sum + displayPrice(item) * item.quantity;
@@ -384,6 +395,21 @@ export default function CheckoutPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="you@example.com"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Phone *
                     </label>
                     <input
@@ -483,11 +509,14 @@ export default function CheckoutPage() {
 
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="w-full mt-6 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg font-semibold"
+                  disabled={submitting || !isFormComplete}
+                  className="w-full mt-6 bg-[#704204] text-white py-3 px-6 rounded-lg hover:bg-[#8a5626] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-lg font-semibold"
                 >
                   {submitting ? "Placing Order..." : "Place Order"}
                 </button>
+                {!isFormComplete && (
+                  <p className="text-xs text-center text-gray-400 mt-2">Please fill in all required fields to continue.</p>
+                )}
               </form>
             </div>
           </div>

@@ -112,6 +112,44 @@ export default function OrdersPage() {
     }
   };
 
+  const handlePaymentStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch(`/api/admin/orders/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ paymentStatus: newStatus }),
+      });
+      if (response.ok) {
+        setOrders(orders.map((o) => (o.id === id ? { ...o, paymentStatus: newStatus } : o)));
+        if (selectedOrder?.id === id) {
+          setSelectedOrder((prev) => prev ? { ...prev, paymentStatus: newStatus } : prev);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating payment status:", error);
+    }
+  };
+
+  const parseGuestData = (notes: string | null): Record<string, string> | null => {
+    if (!notes) return null;
+    // New format: __GUEST__:{...}__END__
+    const newMatch = notes.match(/__GUEST__:(.+?)__END__/s);
+    if (newMatch) { try { return JSON.parse(newMatch[1]); } catch { return null; } }
+    // Legacy format: [Customer Email: xxx]
+    const legacyMatch = notes.match(/^\[Customer Email: ([^\]]+)\]/);
+    if (legacyMatch) return { email: legacyMatch[1] };
+    return null;
+  };
+
+  const parseCleanNotes = (notes: string | null) => {
+    if (!notes) return null;
+    return notes
+      .replace(/__GUEST__:.+?__END__\n?/s, "")
+      .replace(/^\[Customer Email: [^\]]+\]\n?/, "")
+      .trim() || null;
+  };
+
   const filteredOrders = orders.filter((o) => filter === "all" || o.orderStatus === filter);
 
   return (
@@ -254,49 +292,123 @@ export default function OrdersPage() {
                       {selectedOrder.payments[0].provider}
                     </span>
                   )}
-                  <select
-                    value={selectedOrder.orderStatus}
-                    onChange={(e) => handleStatusChange(selectedOrder.id, e.target.value)}
-                    className="ml-auto px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </div>
-
-                {/* Customer Info */}
-                <div className="bg-stone-50 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Customer</h3>
-                  <div className="space-y-1 text-sm">
-                    <p><span className="text-gray-500">Name:</span> <span className="font-medium">{selectedOrder.user?.name || selectedOrder.shippingAddress?.fullName || "Guest"}</span></p>
-                    {selectedOrder.user?.email && (
-                      <p><span className="text-gray-500">Email:</span> <span className="font-medium">{selectedOrder.user.email}</span></p>
-                    )}
-                    {(selectedOrder.user?.phone || selectedOrder.shippingAddress?.phone) && (
-                      <p><span className="text-gray-500">Phone:</span> <span className="font-medium">{selectedOrder.user?.phone || selectedOrder.shippingAddress?.phone}</span></p>
-                    )}
+                  <div className="ml-auto flex flex-col gap-2 items-end">
+                    <select
+                      value={selectedOrder.orderStatus}
+                      onChange={(e) => handleStatusChange(selectedOrder.id, e.target.value)}
+                      className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#704204]"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                    <select
+                      value={selectedOrder.paymentStatus}
+                      onChange={(e) => handlePaymentStatusChange(selectedOrder.id, e.target.value)}
+                      className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="pending">Payment: Pending</option>
+                      <option value="paid">Payment: Paid</option>
+                      <option value="failed">Payment: Failed</option>
+                      <option value="refunded">Payment: Refunded</option>
+                    </select>
                   </div>
                 </div>
 
-                {/* Shipping Address */}
-                {selectedOrder.shippingAddress && (
-                  <div className="bg-stone-50 rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Shipping Address</h3>
-                    <div className="text-sm space-y-0.5 text-gray-700">
-                      <p className="font-medium">{selectedOrder.shippingAddress.fullName}</p>
-                      {selectedOrder.shippingAddress.phone && <p>{selectedOrder.shippingAddress.phone}</p>}
-                      <p>{selectedOrder.shippingAddress.addressLine}</p>
-                      <p>
-                        {[selectedOrder.shippingAddress.area, selectedOrder.shippingAddress.city].filter(Boolean).join(", ")}
-                        {selectedOrder.shippingAddress.postalCode && ` – ${selectedOrder.shippingAddress.postalCode}`}
-                      </p>
-                      {selectedOrder.shippingAddress.country && <p>{selectedOrder.shippingAddress.country}</p>}
-                    </div>
-                  </div>
-                )}
+                {/* Customer Info + Shipping Address */}
+                {(() => {
+                  const g = parseGuestData(selectedOrder.notes);
+                  const name = selectedOrder.user?.name || selectedOrder.shippingAddress?.fullName || g?.fullName || "Guest";
+                  const email = selectedOrder.user?.email || g?.email || null;
+                  const phone = selectedOrder.user?.phone || selectedOrder.shippingAddress?.phone || g?.phone || null;
+                  const addr = selectedOrder.shippingAddress;
+                  const fullName = addr?.fullName || g?.fullName || null;
+                  const addressLine = addr?.addressLine || g?.addressLine || null;
+                  const area = addr?.area || g?.area || null;
+                  const city = addr?.city || g?.city || null;
+                  const country = addr?.country || g?.country || null;
+                  const postalCode = addr?.postalCode || g?.postalCode || null;
+                  return (
+                    <>
+                      <div className="bg-stone-50 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Customer</h3>
+                          {!selectedOrder.user && <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">Guest</span>}
+                        </div>
+                        <div className="space-y-1.5 text-sm">
+                          <div className="flex gap-2">
+                            <span className="text-gray-500 w-24 flex-shrink-0">Full Name</span>
+                            <span className="font-medium">{name}</span>
+                          </div>
+                          {email && (
+                            <div className="flex gap-2">
+                              <span className="text-gray-500 w-24 flex-shrink-0">Email</span>
+                              <a href={`mailto:${email}`} className="font-medium text-[#704204] hover:underline break-all">{email}</a>
+                            </div>
+                          )}
+                          {phone && (
+                            <div className="flex gap-2">
+                              <span className="text-gray-500 w-24 flex-shrink-0">Phone</span>
+                              <a href={`tel:${phone}`} className="font-medium text-[#704204] hover:underline">{phone}</a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {(addressLine || area || city || country) && (
+                        <div className="bg-stone-50 rounded-lg p-4">
+                          <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Shipping Address</h3>
+                          <div className="space-y-1.5 text-sm">
+                            {fullName && (
+                              <div className="flex gap-2">
+                                <span className="text-gray-500 w-24 flex-shrink-0">Full Name</span>
+                                <span className="font-medium">{fullName}</span>
+                              </div>
+                            )}
+                            {phone && (
+                              <div className="flex gap-2">
+                                <span className="text-gray-500 w-24 flex-shrink-0">Phone</span>
+                                <span className="font-medium">{phone}</span>
+                              </div>
+                            )}
+                            {country && (
+                              <div className="flex gap-2">
+                                <span className="text-gray-500 w-24 flex-shrink-0">Country</span>
+                                <span className="font-medium">{country}</span>
+                              </div>
+                            )}
+                            {city && (
+                              <div className="flex gap-2">
+                                <span className="text-gray-500 w-24 flex-shrink-0">City</span>
+                                <span className="font-medium">{city}</span>
+                              </div>
+                            )}
+                            {area && (
+                              <div className="flex gap-2">
+                                <span className="text-gray-500 w-24 flex-shrink-0">Area</span>
+                                <span className="font-medium">{area}</span>
+                              </div>
+                            )}
+                            {postalCode && (
+                              <div className="flex gap-2">
+                                <span className="text-gray-500 w-24 flex-shrink-0">Postal Code</span>
+                                <span className="font-medium">{postalCode}</span>
+                              </div>
+                            )}
+                            {addressLine && (
+                              <div className="flex gap-2">
+                                <span className="text-gray-500 w-24 flex-shrink-0">Address</span>
+                                <span className="font-medium">{addressLine}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {/* Order Items */}
                 <div>
@@ -352,10 +464,10 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Notes */}
-                {selectedOrder.notes && (
+                {parseCleanNotes(selectedOrder.notes) && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <h3 className="text-sm font-semibold text-yellow-800 mb-1">Order Notes</h3>
-                    <p className="text-sm text-yellow-900">{selectedOrder.notes}</p>
+                    <p className="text-sm text-yellow-900">{parseCleanNotes(selectedOrder.notes)}</p>
                   </div>
                 )}
 

@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
 
     const {
       fullName,
+      email,
       phone,
       country,
       city,
@@ -31,6 +32,10 @@ export async function POST(request: NextRequest) {
     // Generate order number
     const orderNumber = "ORD-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9).toUpperCase();
 
+    // Store all guest customer + address data as JSON in notes (no schema migration needed)
+    const guestData = JSON.stringify({ email, fullName, phone, country, city, area, postalCode, addressLine });
+    const fullNotes = `__GUEST__:${guestData}__END__${notes ? `\n${notes}` : ""}`;
+
     // Create order
     const order = await prisma.order.create({
       data: {
@@ -41,9 +46,7 @@ export async function POST(request: NextRequest) {
         total,
         paymentStatus: "pending",
         orderStatus: "pending",
-        notes,
-        // For guest orders, we don't set userId or addressId
-        // We'll store address info in notes or create a separate guest address system
+        notes: fullNotes,
       },
     });
 
