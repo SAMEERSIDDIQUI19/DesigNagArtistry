@@ -185,10 +185,8 @@ export default function Home() {
           <div className="swiper-wrapper">
             {content.billboard.slides.map((slide, index) => (
               <div className="swiper-slide" key={index}>
-                <div className="banner-item banner-item-responsive w-100 position-relative overflow-hidden"
-                  style={{ backgroundImage: `url(${slide.image})`, backgroundPosition: 'center center', backgroundSize: 'cover' }}>
-                  {/* Shown on mobile only — overrides background-image to prevent zoom */}
-                  <img src={slide.image} alt="" className="banner-mobile-img" aria-hidden="true" />
+                <div className="banner-item banner-item-responsive w-100"
+                  style={{ backgroundImage: `url(${slide.image})`, backgroundPosition: 'center center', backgroundSize: 'cover', display: 'block' }}>
                   <div className="banner-content padding-large">
                     <h2 className="display-2 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
                     <p>

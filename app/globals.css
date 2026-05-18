@@ -22,19 +22,22 @@ body {
   margin: 0;
 }
 
-/* ─────────────────────────────────────────────────
-   DESKTOP BILLBOARD — background-image + explicit heights
-   ───────────────────────────────────────────────── */
-
-/* The mobile-only img is ALWAYS hidden on desktop */
-.banner-mobile-img { display: none; }
-
-/* Desktop responsive heights (background-image fills these) */
-.banner-item-responsive { height: 300px; }
-@media (min-width: 480px)  { .banner-item-responsive { height: 420px; } }
-@media (min-width: 768px)  { .banner-item-responsive { height: 580px; } }
-@media (min-width: 1024px) { .banner-item-responsive { height: 720px; } }
-@media (min-width: 1280px) { .banner-item-responsive { height: 850px; } }
+/* ── Responsive billboard height ── */
+.banner-item-responsive {
+  height: 300px;
+}
+@media (min-width: 480px) {
+  .banner-item-responsive { height: 420px; }
+}
+@media (min-width: 768px) {
+  .banner-item-responsive { height: 580px; }
+}
+@media (min-width: 1024px) {
+  .banner-item-responsive { height: 720px; }
+}
+@media (min-width: 1280px) {
+  .banner-item-responsive { height: 850px; }
+}
 
 /* ── Banner section: stack items on mobile ── */
 @media (max-width: 767px) {
@@ -55,28 +58,13 @@ body {
   }
 }
 
-/* ─────────────────────────────────────────────────
-   MOBILE / TABLET BILLBOARD (≤991px)
-   — hide background-image, show <img> at natural size,
-     overlay banner-content, zero gradient
-   ───────────────────────────────────────────────── */
+/* ── Billboard banner: full-width fix on mobile ── */
 @media (max-width: 991px) {
-  /* 1. Kill background-image so there is no zoom/crop */
   .banner-item-responsive {
-    background-image: none !important;
-    height: auto !important;
     position: relative;
     overflow: hidden;
   }
-
-  /* 2. Show the <img> at its natural proportions */
-  .banner-mobile-img {
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  /* 3. banner-content overlays the img with no shadow */
+  /* banner-content fills entire banner-item absolutely */
   #billboard .banner-content {
     position: absolute !important;
     top: 0 !important;
@@ -86,26 +74,27 @@ body {
     width: 100% !important;
     height: 100% !important;
     display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
     padding: 1.5rem !important;
-    background: transparent !important;
+    background: linear-gradient(to right, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.05)) !important;
     box-sizing: border-box !important;
   }
-
-  /* 4. Scale text to fit mobile viewport */
   #billboard .banner-content h2,
   #billboard .banner-content .display-2 {
-    font-size: clamp(1.4rem, 5vw, 2.5rem) !important;
-    line-height: 1.2 !important;
+    font-size: 1.4rem !important;
+    line-height: 1.25 !important;
     white-space: normal !important;
     word-break: break-word !important;
+    max-width: 80% !important;
     overflow-wrap: break-word !important;
     color: #fff !important;
   }
   #billboard .banner-content p {
     font-size: 0.875rem !important;
-    margin-bottom: 0.75rem !important;
+    max-width: 75% !important;
+    margin-bottom: 1rem;
     color: rgba(255,255,255,0.9) !important;
   }
 }
@@ -130,9 +119,17 @@ body {
   }
 }
 
-/* ── Padding scale on small screens ── */
+/* ── Billboard text scales on mobile ── */
 @media (max-width: 576px) {
-  .padding-large { padding: 1.5rem; }
+  .banner-content .display-2 {
+    font-size: 1.4rem !important;
+  }
+  .banner-content p {
+    font-size: 0.8rem !important;
+  }
+  .padding-large {
+    padding: 1.5rem;
+  }
 }
 
 /* ── Product store swipers: 2 up on mobile ── */
