@@ -9,6 +9,9 @@ export async function POST(request: NextRequest) {
 
     const fromEmail = "info@designagartistry.com";
 
+    console.log("Attempting to send email to:", to);
+    console.log("Subject:", subject);
+
     const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: [to],

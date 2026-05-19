@@ -98,7 +98,7 @@ info@designagartistry.com
           Order Total: Rs. ${total.toFixed(2)}
         </div>
         
-        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/track-order?orderNumber=${orderNumber}" class="track-button">Track Order</a>
+        <a href="https://www.designagartistry.com/track-order?orderNumber=${orderNumber}" class="track-button">Track Order</a>
         
         <p style="margin-top: 20px;"><strong>Payment Method:</strong> Cash on Delivery</p>
       </div>
@@ -119,7 +119,7 @@ info@designagartistry.com
 </html>
 `;
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/send-email`, {
+    const response = await fetch('/api/send-email', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
