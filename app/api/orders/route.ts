@@ -8,6 +8,8 @@ async function sendOrderConfirmationEmail(
   orderNumber: string,
   orderDate: Date,
   items: any[],
+  subtotal: number,
+  shippingFee: number,
   total: number,
   shippingAddress: string,
   request: NextRequest
@@ -33,6 +35,8 @@ Shipping Address: ${shippingAddress}
 Items Ordered:
 ${itemsList}
 
+Subtotal: Rs. ${subtotal.toFixed(2)}
+Shipping Charges: Rs. ${shippingFee.toFixed(2)}
 Order Total: Rs. ${total.toFixed(2)}
 
 Payment Method: Cash on Delivery
@@ -95,6 +99,8 @@ info@designagartistry.com
           `).join('')}
         </div>
         
+        <p><strong>Subtotal:</strong> Rs. ${subtotal.toFixed(2)}</p>
+        <p><strong>Shipping Charges:</strong> Rs. ${shippingFee.toFixed(2)}</p>
         <div class="total">
           Order Total: Rs. ${total.toFixed(2)}
         </div>
@@ -250,6 +256,8 @@ export async function POST(request: NextRequest) {
         quantity: item.quantity,
         price: typeof item.product.price === 'string' ? parseFloat(item.product.price) : item.product.price,
       })),
+      subtotal,
+      shippingFee,
       total,
       shippingAddress,
       request

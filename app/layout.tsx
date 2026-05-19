@@ -3,8 +3,8 @@ import "./globals.css";
 import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
-  title: "DesigNagar - Jewelry and Accessories Store",
-  description: "Crafted by hand or printed with passion, DesigNagar brings you fashion that's truly one of a kind.",
+  title: "DesigNagArtistry - Buy - Style - Repeat",
+  description: "Crafted by hand or printed with passion, DesigNagArtistry brings you fashion that's truly one of a kind.",
 };
 
 export default function RootLayout({

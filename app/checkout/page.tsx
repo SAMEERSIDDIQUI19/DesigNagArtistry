@@ -223,7 +223,7 @@ export default function CheckoutPage() {
     return sum + displayPrice(item) * item.quantity;
   }, 0);
 
-  const shippingFee = 0;
+  const shippingFee = 250;
   const total = subtotal + shippingFee;
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
