@@ -1,6 +1,140 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Helper function to send order confirmation email
+async function sendOrderConfirmationEmail(
+  email: string,
+  fullName: string,
+  orderNumber: string,
+  orderDate: Date,
+  items: any[],
+  total: number,
+  shippingAddress: string
+) {
+  try {
+    if (!process.env.ZOHO_EMAIL || !process.env.ZOHO_PASSWORD) {
+      console.log("Zoho email credentials not configured, skipping email");
+      return;
+    }
+
+    const itemsList = items
+      .map((item) => `${item.productName} – ${item.quantity} x Rs. ${item.price.toFixed(2)}`)
+      .join("\n");
+
+    const message = `
+Dear ${fullName},
+
+Thank you for your purchase! We are pleased to confirm that your order has been successfully placed and is being processed.
+
+Order Details:
+Order Number: ${orderNumber}
+Order Date: ${orderDate.toLocaleDateString()}
+Customer Name: ${fullName}
+Shipping Address: ${shippingAddress}
+
+Items Ordered:
+${itemsList}
+
+Order Total: Rs. ${total.toFixed(2)}
+
+Payment Method: Cash on Delivery
+
+If you have any questions or need assistance, feel free to contact our support team at info@designagartistry.com or +92 324 1272547.
+
+Thank you for shopping with us!
+
+Best regards,
+DesigNagArtistry
+info@designagartistry.com
++92 324 1272547
+`;
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #704204; color: white; padding: 20px; text-align: center; }
+    .content { background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin-top: 20px; }
+    .order-details { background-color: white; padding: 15px; border-radius: 5px; margin-top: 15px; }
+    .items-list { margin-top: 10px; }
+    .item { padding: 10px 0; border-bottom: 1px solid #eee; }
+    .total { font-size: 18px; font-weight: bold; margin-top: 20px; color: #704204; }
+    .footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Order Confirmation</h1>
+    </div>
+    <div class="content">
+      <p>Dear ${fullName},</p>
+      <p>Thank you for your purchase! We are pleased to confirm that your order has been successfully placed and is being processed.</p>
+      
+      <div class="order-details">
+        <h3>Order Details</h3>
+        <p><strong>Order Number:</strong> ${orderNumber}</p>
+        <p><strong>Order Date:</strong> ${orderDate.toLocaleDateString()}</p>
+        <p><strong>Customer Name:</strong> ${fullName}</p>
+        <p><strong>Shipping Address:</strong> ${shippingAddress}</p>
+        
+        <h3 style="margin-top: 20px;">Items Ordered</h3>
+        <div class="items-list">
+          ${items.map(item => `
+            <div class="item">
+              <strong>${item.productName}</strong> – ${item.quantity} x Rs. ${item.price.toFixed(2)}
+            </div>
+          `).join('')}
+        </div>
+        
+        <div class="total">
+          Order Total: Rs. ${total.toFixed(2)}
+        </div>
+        
+        <p style="margin-top: 20px;"><strong>Payment Method:</strong> Cash on Delivery</p>
+      </div>
+      
+      <p>If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:info@designagartistry.com">info@designagartistry.com</a> or <a href="https://wa.me/923241272547">+92 324 1272547</a>.</p>
+      
+      <p>Thank you for shopping with us!</p>
+      
+      <div class="footer">
+        <p><strong>Best regards,</strong><br>
+        DesigNagArtistry<br>
+        <a href="mailto:info@designagartistry.com">info@designagartistry.com</a><br>
+        <a href="https://wa.me/923241272547">+92 324 1272547</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/send-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: email,
+        subject: `Order Confirmation – Your Order Has Been Placed Successfully (${orderNumber})`,
+        message,
+        html,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Failed to send email:", error);
+    } else {
+      console.log("Order confirmation email sent successfully to:", email);
+    }
+  } catch (error) {
+    console.error("Error sending order confirmation email:", error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const sessionId = request.headers.get("x-session-id");
@@ -96,6 +230,22 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Order created successfully:", order.id);
+
+    // Send order confirmation email
+    const shippingAddress = `${addressLine}, ${area}, ${city}, ${country} - ${postalCode}`;
+    await sendOrderConfirmationEmail(
+      email,
+      fullName,
+      order.orderNumber,
+      order.createdAt,
+      cartItems.map(item => ({
+        productName: item.product.name,
+        quantity: item.quantity,
+        price: typeof item.product.price === 'string' ? parseFloat(item.product.price) : item.product.price,
+      })),
+      total,
+      shippingAddress
+    );
 
     return NextResponse.json({
       orderId: order.id,
