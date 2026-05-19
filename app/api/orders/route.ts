@@ -56,17 +56,24 @@ info@designagartistry.com
   <style>
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .logo { text-align: center; margin-bottom: 20px; }
+    .logo img { max-width: 200px; height: auto; }
     .header { background-color: #704204; color: white; padding: 20px; text-align: center; }
     .content { background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin-top: 20px; }
     .order-details { background-color: white; padding: 15px; border-radius: 5px; margin-top: 15px; }
     .items-list { margin-top: 10px; }
     .item { padding: 10px 0; border-bottom: 1px solid #eee; }
     .total { font-size: 18px; font-weight: bold; margin-top: 20px; color: #704204; }
+    .track-button { display: inline-block; background-color: #704204; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold; }
+    .track-button:hover { background-color: #8a5626; }
     .footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="logo">
+      <img src="https://www.designagartistry.com/images/MainImage3.png" alt="DesigNagArtistry Logo" />
+    </div>
     <div class="header">
       <h1>Order Confirmation</h1>
     </div>
@@ -93,6 +100,8 @@ info@designagartistry.com
         <div class="total">
           Order Total: Rs. ${total.toFixed(2)}
         </div>
+        
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/track-order?orderNumber=${orderNumber}" class="track-button">Track Order</a>
         
         <p style="margin-top: 20px;"><strong>Payment Method:</strong> Cash on Delivery</p>
       </div>
