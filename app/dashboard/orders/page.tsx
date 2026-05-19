@@ -365,7 +365,7 @@ export default function OrdersPage() {
                           {phone && (
                             <div className="flex gap-2">
                               <span className="text-gray-500 w-24 flex-shrink-0">Phone</span>
-                              <a href={`tel:${phone}`} className="font-medium text-[#704204] hover:underline">{phone}</a>
+                              <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="font-medium text-[#704204] hover:underline">{phone}</a>
                             </div>
                           )}
                         </div>
@@ -384,7 +384,7 @@ export default function OrdersPage() {
                             {phone && (
                               <div className="flex gap-2">
                                 <span className="text-gray-500 w-24 flex-shrink-0">Phone</span>
-                                <span className="font-medium">{phone}</span>
+                                <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="font-medium text-[#704204] hover:underline">{phone}</a>
                               </div>
                             )}
                             {country && (

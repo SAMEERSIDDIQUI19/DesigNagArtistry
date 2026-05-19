@@ -63,7 +63,7 @@ export default function Footer() {
             <div className="col-lg-3 col-sm-6">
               <div className="footer-menu contact-item">
                 <h5 className="widget-title text-capitalize pb-2">Contact Us</h5>
-                <p><a href="#">+ 92 301 3260806</a></p>
+                <p><a href="https://wa.me/923241272547" target="_blank" rel="noopener noreferrer">+ 92 324 1272547</a></p>
                 <p><a href="mailto:">info@designagartistry.com</a></p>
               </div>
             </div>

@@ -156,8 +156,8 @@ export default function Contact() {
                     <span className="fs-4 flex-shrink-0">📞</span>
                     <div>
                       <p className="small fw-semibold text-dark mb-0">Phone / WhatsApp</p>
-                      <a href="tel:+923013260806" className="small text-muted text-decoration-none">
-                        +92 301 3260806
+                      <a href="https://wa.me/923241272547" target="_blank" rel="noopener noreferrer" className="small text-muted text-decoration-none">
+                        + 92 324 1272547
                       </a>
                     </div>
                   </div>
