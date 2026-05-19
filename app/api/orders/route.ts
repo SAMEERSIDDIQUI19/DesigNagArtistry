@@ -9,7 +9,8 @@ async function sendOrderConfirmationEmail(
   orderDate: Date,
   items: any[],
   total: number,
-  shippingAddress: string
+  shippingAddress: string,
+  request: NextRequest
 ) {
   try {
     // Email sending is now enabled with hardcoded API key
@@ -250,7 +251,8 @@ export async function POST(request: NextRequest) {
         price: typeof item.product.price === 'string' ? parseFloat(item.product.price) : item.product.price,
       })),
       total,
-      shippingAddress
+      shippingAddress,
+      request
     );
 
     return NextResponse.json({
