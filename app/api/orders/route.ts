@@ -12,10 +12,7 @@ async function sendOrderConfirmationEmail(
   shippingAddress: string
 ) {
   try {
-    if (!process.env.RESEND_API_KEY) {
-      console.log("Resend API key not configured, skipping email");
-      return;
-    }
+    // Email sending is now enabled with hardcoded API key
 
     const itemsList = items
       .map((item) => `${item.productName} – ${item.quantity} x Rs. ${item.price.toFixed(2)}`)
