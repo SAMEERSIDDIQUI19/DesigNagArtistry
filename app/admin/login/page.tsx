@@ -15,6 +15,9 @@ function AdminLoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("=== FORM SUBMIT ===");
+    console.log("Email:", email);
+    console.log("Password length:", password?.length);
     setError("");
     setLoading(true);
 
@@ -26,6 +29,9 @@ function AdminLoginForm() {
         },
         body: JSON.stringify({ email, password }),
       });
+
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
 
       const raw = await response.text();
       let data: { error?: string; token?: string; user?: unknown };

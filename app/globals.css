@@ -46,10 +46,20 @@ body {
   display: block;
 }
 
+/* Button positioned at bottom-center of billboard slide */
+.billboard-btn-wrap {
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 2;
+}
+
 /* Desktop explicit heights so absolute img has a container to fill */
 @media (min-width: 992px) {
   .banner-item-responsive { min-height: 480px; }
-  #billboard .banner-content .mt-3 { margin-top: 5rem !important; }
 }
 @media (min-width: 1024px) {
   .banner-item-responsive { min-height: 580px; }
@@ -99,7 +109,7 @@ body {
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    padding: 1.5rem !important;
+    padding: 1.5rem 1.5rem 6rem !important;
     background: rgba(0,0,0,0.25) !important;
     box-sizing: border-box !important;
     z-index: 1 !important;
@@ -114,9 +124,14 @@ body {
     color: #fff !important;
   }
   #billboard .banner-content p {
-    font-size: 0.875rem !important;
-    margin-bottom: 0.75rem !important;
-    color: rgba(255,255,255,0.9) !important;
+    display: none !important;
+  }
+}
+
+/* ── Billboard button: mobile-specific positioning to avoid overlap ── */
+@media (max-width: 576px) {
+  .billboard-btn-wrap {
+    bottom: 1.5rem !important;
   }
 }
 
@@ -134,9 +149,28 @@ body {
   .btn.btn-arrow svg {
     top: 50% !important;
     right: 18px !important;
+    transform: translateY(-50%) !important;
   }
   .btn.btn-medium {
     padding-right: 3rem !important;
+  }
+}
+
+/* ── Billboard button: mobile-only sizing & centering ── */
+@media (max-width: 576px) {
+  .billboard-btn-wrap .btn.btn-medium {
+    width: auto !important;
+    max-width: 260px !important;
+    height: 10px !important;
+    padding: 0.75em 1.6em 0.75em 1.6em !important;
+    padding-right: 3rem !important;
+    font-size: 1em !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1.4 !important;
+    top: 20px !important;
+    margin-bottom: 0 !important;
   }
 }
 

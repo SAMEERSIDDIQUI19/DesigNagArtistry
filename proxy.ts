@@ -98,12 +98,11 @@ export function proxy(request: NextRequest) {
 
   // 4. Admin API: require Authorization header
   // Some admin GET endpoints serve public data (e.g. home-content for the homepage)
-  const PUBLIC_ADMIN_GET_ROUTES = ['/api/admin/home-content'];
-  const isPublicAdminGet =
-    request.method === 'GET' &&
-    PUBLIC_ADMIN_GET_ROUTES.some((r) => pathname.startsWith(r));
+  // Login endpoint must be public to allow authentication
+  const PUBLIC_ADMIN_ROUTES = ['/api/admin/home-content', '/api/admin/login', '/api/admin/test-db'];
+  const isPublicAdminRoute = PUBLIC_ADMIN_ROUTES.some((r) => pathname.startsWith(r));
 
-  if (pathname.startsWith('/api/admin') && !isPublicAdminGet && !hasAdminToken(request)) {
+  if (pathname.startsWith('/api/admin') && !isPublicAdminRoute && !hasAdminToken(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

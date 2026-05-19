@@ -9,6 +9,10 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
 
+    console.log("=== LOGIN DEBUG ===");
+    console.log("Email received:", email);
+    console.log("Password length:", password?.length);
+
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -21,7 +25,15 @@ export async function POST(request: NextRequest) {
       where: { email },
     });
 
+    console.log("User found:", !!user);
+    if (user) {
+      console.log("User role:", user.role);
+      console.log("User email in DB:", user.email);
+      console.log("Password hash length:", user.password?.length);
+    }
+
     if (!user) {
+      console.log("Login failed: User not found");
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }
@@ -30,6 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user is admin
     if (user.role !== "admin") {
+      console.log("Login failed: Not admin, role is:", user.role);
       return NextResponse.json(
         { error: "Access denied. Admin only." },
         { status: 403 }
@@ -38,8 +51,10 @@ export async function POST(request: NextRequest) {
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log("Password valid:", isValidPassword);
 
     if (!isValidPassword) {
+      console.log("Login failed: Invalid password");
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 }

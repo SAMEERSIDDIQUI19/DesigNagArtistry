@@ -4,6 +4,7 @@ import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getPrimaryThumbnail } from "@/lib/thumbnail-utils";
+import SearchableDropdown from "@/components/SearchableDropdown";
 
 interface BankAccount {
   id: string;
@@ -51,6 +52,29 @@ interface CartItem {
   };
 }
 
+// Country, City, and Area data
+const COUNTRIES = [
+  "Pakistan", "United States", "United Kingdom", "Canada", "Australia",
+  "UAE", "Saudi Arabia", "India", "Bangladesh", "Sri Lanka",
+  "Malaysia", "Singapore", "Germany", "France", "Italy",
+  "Japan", "South Korea", "China", "Netherlands", "Spain"
+];
+
+const PAKISTAN_CITIES = [
+  "Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad",
+  "Multan", "Peshawar", "Quetta", "Sialkot", "Gujranwala",
+  "Hyderabad", "Sukkur", "Larkana", "Abbottabad", "Sargodha",
+  "Jhelum", "Sheikhupura", "Mardan", "Mianwali", "Bahawalpur"
+];
+
+const KARACHI_AREAS = [
+  "Clifton", "DHA", "Gulshan-e-Iqbal", "North Nazimabad", "Gulistan-e-Jauhar",
+  "PECHS", "Bahadurabad", "Liaquatabad", "North Karachi", "Gulshan-e-Hadeed",
+  "Malir", "Korangi", "Landhi", "Shah Faisal Colony", "Jinnah Post",
+  "Saddar", "Garden", "Jamshed Road", "Gulberg", "Federal B Area",
+  "Nazimabad", "North Nazimabad", "Buffer Zone", "Gulshan-e-Maymar", "Scheme 33"
+];
+
 export default function CheckoutPage() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -71,6 +95,51 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "bank_transfer" | "card">("cod");
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
+
+  // Dynamic city and area options based on country/city selection
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [areaOptions, setAreaOptions] = useState<string[]>([]);
+
+  // Update city options when country changes
+  useEffect(() => {
+    if (formData.country === "Pakistan") {
+      setCityOptions(PAKISTAN_CITIES);
+    } else {
+      setCityOptions(["City 1", "City 2", "City 3"]); // Default for other countries
+    }
+  }, [formData.country]);
+
+  // Fetch areas from GeoNames API when city changes
+  useEffect(() => {
+    const fetchAreas = async () => {
+      if (!formData.city) {
+        setAreaOptions([]);
+        return;
+      }
+
+      try {
+        // Get country code for GeoNames API
+        const countryCode = formData.country === "Pakistan" ? "PK" : formData.country.slice(0, 2).toUpperCase();
+        const response = await fetch(
+          `http://api.geonames.org/searchJSON?q=${encodeURIComponent(formData.city)}&country=${countryCode}&maxRows=850&username=sameer_ahmed`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const areas = data.geonames?.map((item: { toponymName: string }) => item.toponymName) || [];
+          setAreaOptions(areas);
+        } else {
+          // Fallback to default areas if API fails
+          setAreaOptions(["Area 1", "Area 2", "Area 3"]);
+        }
+      } catch (error) {
+        console.error("Error fetching areas from GeoNames:", error);
+        setAreaOptions(["Area 1", "Area 2", "Area 3"]); // Fallback
+      }
+    };
+
+    fetchAreas();
+  }, [formData.city, formData.country]);
 
   // Generate or get session ID for guest users
   const getSessionId = () => {
@@ -159,6 +228,10 @@ export default function CheckoutPage() {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDropdownChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -422,47 +495,35 @@ export default function CheckoutPage() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Country *
-                    </label>
-                    <input
-                      type="text"
-                      name="country"
-                      required
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                  <SearchableDropdown
+                    name="country"
+                    label="Country"
+                    value={formData.country}
+                    onChange={handleDropdownChange}
+                    options={COUNTRIES}
+                    required
+                    placeholder="Select or type country..."
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City *
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      required
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                  <SearchableDropdown
+                    name="city"
+                    label="City"
+                    value={formData.city}
+                    onChange={handleDropdownChange}
+                    options={cityOptions}
+                    required
+                    placeholder="Select or type city..."
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Area *
-                    </label>
-                    <input
-                      type="text"
-                      name="area"
-                      required
-                      value={formData.area}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                  <SearchableDropdown
+                    name="area"
+                    label="Area"
+                    value={formData.area}
+                    onChange={handleDropdownChange}
+                    options={areaOptions}
+                    required
+                    placeholder="Select or type area..."
+                  />
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">

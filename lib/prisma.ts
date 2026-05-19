@@ -10,13 +10,16 @@ function getPrismaClient() {
     return globalForPrisma.prisma;
   }
 
-  const connectionString = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_xfSzH4GF1eRt@ep-lively-bonus-ap3m0d4n.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require";
-  
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not set in environment variables");
+  }
+
   const client = new PrismaClient({
     adapter: new PrismaPg(connectionString),
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
-  
+
   globalForPrisma.prisma = client;
   return client;
 }

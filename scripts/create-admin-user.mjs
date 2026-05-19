@@ -6,7 +6,10 @@
  *
  * Loads DATABASE_URL from .env in the project root (run from repo root).
  */
-import "dotenv/config";
+import { config } from "dotenv";
+import { existsSync } from "fs";
+if (existsSync(".env.local")) config({ path: ".env.local" });
+else config();
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
