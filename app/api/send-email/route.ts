@@ -1,38 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
     const { to, subject, message, html } = await request.json();
 
-    if (!process.env.ZOHO_EMAIL || !process.env.ZOHO_PASSWORD) {
+    if (!process.env.RESEND_API_KEY) {
       return NextResponse.json(
-        { success: false, error: "Zoho email credentials not configured" },
+        { success: false, error: "Resend API key not configured" },
         { status: 500 }
       );
     }
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp.zoho.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.ZOHO_EMAIL,
-        pass: process.env.ZOHO_PASSWORD,
-      },
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "info@designagartistry.com";
+
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [to],
+      subject,
+      html: html || message,
     });
 
-    const mailOptions = {
-      from: process.env.ZOHO_EMAIL,
-      to,
-      subject,
-      text: message,
-      html: html || undefined,
-    };
+    if (error) {
+      console.error("Resend email error:", error);
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      );
+    }
 
-    await transporter.sendMail(mailOptions);
-
-    return NextResponse.json({ success: true });
+    console.log("Email sent successfully via Resend:", data);
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error("Email sending error:", error);
     return NextResponse.json(

@@ -12,8 +12,8 @@ async function sendOrderConfirmationEmail(
   shippingAddress: string
 ) {
   try {
-    if (!process.env.ZOHO_EMAIL || !process.env.ZOHO_PASSWORD) {
-      console.log("Zoho email credentials not configured, skipping email");
+    if (!process.env.RESEND_API_KEY) {
+      console.log("Resend API key not configured, skipping email");
       return;
     }
 

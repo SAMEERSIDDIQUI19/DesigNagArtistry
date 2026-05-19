@@ -121,7 +121,7 @@ export default function CheckoutPage() {
         // Get country code for GeoNames API
         const countryCode = formData.country === "Pakistan" ? "PK" : formData.country.slice(0, 2).toUpperCase();
         const response = await fetch(
-          `http://api.geonames.org/searchJSON?q=${encodeURIComponent(formData.city)}&country=${countryCode}&maxRows=850&username=sameer_ahmed`
+          `/api/geonames?q=${encodeURIComponent(formData.city)}&country=${countryCode}`
         );
 
         if (response.ok) {
