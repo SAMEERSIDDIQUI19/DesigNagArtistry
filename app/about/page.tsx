@@ -9,12 +9,16 @@ export default function About() {
             <div className="display-header text-center">
               <h2 id="title" className="display-2 text-capitalize text-dark pb-2">About Us</h2>
               <p className="pb-3">
-                Crafted by hand or printed with passion, DesigNagar brings you fashion that's truly one of a kind.
+                Crafted by hand or printed with passion, DesigNagArtistry brings you fashion that&apos;s truly one of a kind.
                 Wear the story. Wear the art.
               </p>
               <p className="pb-3">
-                We believe in creating unique pieces that tell a story. Our jewelry and accessories are designed
-                with love and attention to detail, ensuring each piece is as special as the person wearing it.
+                We create handcrafted clothing and accessories for both men and women — designed with love,
+                artistic intention, and attention to detail. Every piece is made to be as unique as the person wearing it.
+              </p>
+              <p className="pb-3">
+                From artisan-crafted outfits to boldly printed fashion pieces, our collections celebrate
+                individuality and self-expression. We don&apos;t do ordinary. We do one of a kind.
               </p>
               <Link href="/" className="btn btn-medium btn-arrow outline-dark position-relative mt-3">
                 <span className="text-capitalize">Back to Home</span>

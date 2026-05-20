@@ -33,6 +33,15 @@ export default function Footer() {
                   <li className="menu-item pb-2">
                     <Link href="/contact">Contact</Link>
                   </li>
+                  <li className="menu-item pb-2">
+                    <Link href="/return-policy">Return Policy</Link>
+                  </li>
+                  <li className="menu-item pb-2">
+                    <Link href="/shipping-information">Shipping Info</Link>
+                  </li>
+                  <li className="menu-item pb-2">
+                    <Link href="/terms-conditions">Terms &amp; Conditions</Link>
+                  </li>
                 </ul>
               </div>
             </div>
