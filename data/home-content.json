@@ -3,22 +3,22 @@
     "slides": [
       {
         "image": "/images/banner-image1.jpg",
-        "title": "Handcrafted Elegance for Every Occasion",
-        "description": "Explore our exclusive collection of handcrafted jewelry designed to add elegance, confidence, and timeless beauty to your everyday style. From modern necklace sets to luxury accessories, discover pieces made to stand out beautifully.",
+        "title": "Handcrafted Fashion for Every Occasion",
+        "description": "Explore our exclusive collection of handcrafted clothing and accessories designed to add elegance, confidence, and timeless style to your everyday look. From artisan-crafted outfits to unique printed pieces, discover fashion made to stand out.",
         "buttonText": "Shop Collection",
         "buttonLink": "/shop"
       },
       {
         "image": "/images/banner-image2.jpg",
-        "title": "Luxury Earrings with Timeless Charm",
-        "description": "Upgrade your jewelry collection with elegant pearl drop earrings crafted for women who love sophisticated fashion. Perfect for weddings, parties, and everyday luxury styling with premium-quality craftsmanship.\n",
+        "title": "Printed Fashion with Timeless Charm",
+        "description": "Upgrade your wardrobe with printed and handcrafted fashion pieces made for everyone who loves sophisticated style. Perfect for casual wear, special occasions, and everyday looks — crafted with passion and premium-quality artistry.",
         "buttonText": "Explore Now",
         "buttonLink": "/shop"
       },
       {
         "image": "/images/banner-image3.jpg",
-        "title": "Modern Jewelry Inspired by Artistry",
-        "description": "Discover artistic jewelry pieces designed with creativity, elegance, and modern fashion trends in mind. Our opal teardrop necklace collection blends luxury design with timeless sophistication for every special moment.\n",
+        "title": "Modern Fashion Inspired by Artistry",
+        "description": "Discover handcrafted clothing and accessories designed with creativity, elegance, and modern fashion trends in mind. Every piece blends artistic design with timeless sophistication — made for men and women who wear fashion with intention.",
         "buttonText": "Discover More",
         "buttonLink": "/shop"
       }
@@ -28,7 +28,7 @@
     "items": [
       {
         "image": "/images/product-item4.jpg",
-        "title": "Modern Jewelry Collection",
+        "title": "Modern Fashion Collection",
         "buttonText": "Shop Now",
         "buttonLink": "/shop"
       },
@@ -48,86 +48,86 @@
   },
   "aboutUs": {
     "title": "About DesigNagArtistry",
-    "description": "DesigNagArtistry is a premium fashion and jewelry brand focused on creating elegant handcrafted pieces inspired by timeless beauty and artistic creativity. We believe jewelry is more than an accessory — it is a statement of confidence, individuality, and style. Our collections feature modern necklaces, luxury earrings, fashionable accessories, and unique designs crafted with attention to detail and quality. Whether you are dressing for a special occasion or elevating your everyday look, DesigNagArtistry brings you jewelry designed to make every moment shine.\n",
+    "description": "DesigNagArtistry is a premium handcrafted fashion brand creating unique clothing and accessories for both men and women. We believe fashion is more than what you wear — it is a statement of confidence, individuality, and artistry. Our collections feature handcrafted outfits, printed fashion pieces, and one-of-a-kind accessories designed with love and attention to detail. Whether you are dressing for a special occasion or elevating your everyday look, DesigNagArtistry brings you fashion that is truly one of a kind.",
     "buttonText": "Learn More",
     "buttonLink": "/about"
   },
   "featuredProducts": {
-    "title": "Featured Jewelry & Fashion Collection",
+    "title": "Featured Handcrafted Fashion Collection",
     "buttonText": "Shop All",
     "buttonLink": "/shop",
     "products": [
       {
         "image": "/images/product-item1.jpg",
-        "name": "Gold Chain",
-        "price": "$200",
-        "slug": "gold-chain"
+        "name": "Handcrafted Shirt",
+        "price": "$45",
+        "slug": "handcrafted-shirt"
       },
       {
         "image": "/images/product-item2.jpg",
-        "name": "Diamond Ring",
-        "price": "$350",
-        "slug": "diamond-ring"
+        "name": "Printed Kurta",
+        "price": "$55",
+        "slug": "printed-kurta"
       },
       {
         "image": "/images/product-item3.jpg",
-        "name": "Pearl Necklace",
-        "price": "$280",
-        "slug": "pearl-necklace"
+        "name": "Embroidered Top",
+        "price": "$50",
+        "slug": "embroidered-top"
       },
       {
         "image": "/images/product-item4.jpg",
-        "name": "Silver Earrings",
-        "price": "$150",
-        "slug": "silver-earrings"
+        "name": "Fashion Scarf",
+        "price": "$30",
+        "slug": "fashion-scarf"
       }
     ]
   },
   "testimonials": {
     "items": [
       {
-        "quote": "The jewelry designs are absolutely stunning and beautifully crafted. Every piece feels premium, elegant, and perfect for both casual and formal wear. I love the unique artistic touch in every collection.\n",
+        "quote": "The clothing designs are absolutely stunning and beautifully crafted. Every piece feels premium, elegant, and perfect for both casual and formal wear. I love the unique artistic touch in every collection.",
         "author": "Hana Kimusaki"
       },
       {
-        "quote": "Amazing quality, elegant packaging, and timeless designs. DesigNagArtistry offers fashionable jewelry that truly stands out. I always receive compliments whenever I wear their accessories.\n",
+        "quote": "Amazing quality, elegant packaging, and timeless designs. DesigNagArtistry offers handcrafted fashion that truly stands out. I always receive compliments whenever I wear their pieces.",
         "author": "Marium Anny"
       }
     ]
   },
   "trendingProducts": {
-    "title": "Trending Jewelry Collections",
+    "title": "Trending Fashion Collections",
     "buttonText": "View All Products",
     "buttonLink": "/shop",
     "products": [
       {
         "image": "/images/product-item2.jpg",
-        "name": "Teardrop Earrings",
-        "price": "$180",
-        "slug": "teardrop-earrings"
+        "name": "Printed T-Shirt",
+        "price": "$35",
+        "slug": "printed-t-shirt"
       },
       {
         "image": "/images/product-item11.jpg",
-        "name": "Crystal Bracelet",
-        "price": "$220",
-        "slug": "crystal-bracelet"
+        "name": "Handcrafted Jacket",
+        "price": "$90",
+        "slug": "handcrafted-jacket"
       },
       {
         "image": "/images/product-item5.jpg",
-        "name": "Gold Pendant",
-        "price": "$300",
-        "slug": "gold-pendant"
+        "name": "Designer Dress",
+        "price": "$75",
+        "slug": "designer-dress"
       },
       {
         "image": "/images/product-item10.jpg",
-        "name": "Silver Ring",
-        "price": "$120",
-        "slug": "silver-ring"
+        "name": "Casual Tee",
+        "price": "$25",
+        "slug": "casual-tee"
       }
     ]
   },
   "latestBlog": {
-    "title": "Latest Fashion & Jewelry Articles",
+    "title": "Latest Fashion & Style Articles",
     "buttonText": "Read More Articles",
     "buttonLink": "/blog"
   }
