@@ -39,7 +39,7 @@ const terms = [
             Handcrafted items may have natural variations in finish, texture, or
             colour — these are not defects
           </li>
-          <li>Prices are listed in <strong>USD</strong> and are subject to change without notice</li>
+          <li>Prices are listed in <strong>PKR</strong> and are subject to change without notice</li>
         </ul>
       </>
     ),
