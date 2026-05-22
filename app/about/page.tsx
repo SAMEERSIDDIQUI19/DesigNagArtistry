@@ -47,7 +47,7 @@ export default function About() {
               </h1>
               <p className="pb-3">
                 Born from a reverence for artisanal heritage and a fearless contemporary vision,{' '}
-                <strong>Designagartistry</strong> stands as Pakistan&apos;s definitive voice in premium luxury fashion.
+                <strong>Designagartistry </strong> stands as Pakistan&apos;s definitive voice in premium luxury fashion.
                 Each collection is an intimate dialogue between <em>original craftsmanship</em> and runway-inspired
                 global silhouettes &mdash; where tonal embroidery adorns structured Kalidaars, and schiffli cutwork
                 breathes poetry into modern Angrakha kurtas.
