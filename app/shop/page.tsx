@@ -240,8 +240,8 @@ export default function ShopPage() {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-gray-900 to-[#c37409] text-white py-10 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">Shop Our Collection</h1>
-          <p className="text-sm sm:text-xl text-gray-300">Discover our latest fashion trends</p>
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">Luxe Pret &amp; Ready-to-Wear</h1>
+          <p className="text-sm sm:text-xl text-gray-300 max-w-2xl mx-auto">Indulge in premium co-ord sets, matching separates &amp; handcrafted modern ethnic couture &mdash; curated for Pakistan&apos;s modern muse.</p>
         </div>
       </div>
 
@@ -292,7 +292,7 @@ export default function ShopPage() {
         {/* Mobile Sidebar (collapsible) */}
         {sidebarOpen && (
           <div className="lg:hidden mb-4 bg-white rounded-lg shadow-md p-4">
-            <h2 className="text-base font-semibold text-gray-900 mb-3">Categories</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-3">Explore Collections</h2>
             {categoryPanel}
           </div>
         )}
@@ -301,7 +301,7 @@ export default function ShopPage() {
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-52 flex-shrink-0">
             <div className="bg-white rounded-lg shadow-md p-5 sticky top-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Explore Collections</h2>
               {categoryPanel}
             </div>
           </aside>

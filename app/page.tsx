@@ -224,7 +224,7 @@ export default function Home() {
             {content.banner.items.map((item, index) => (
               <div key={index} className="col-md-4 banner-content-1 position-relative">
                 <div>
-                  <img src={item.image} className="img-fluid" alt="img" />
+                  <img src={item.image} className="img-fluid" alt={`Designagartistry — ${item.title}`} />
                 </div>
                 <div className="banner-content-text position-absolute">
                   <h2 className="display-5" style={item.titleColor ? { color: item.titleColor } : {}}>{item.title}</h2>

@@ -9,8 +9,7 @@ export default function Footer() {
             <div className="col-lg-3 col-sm-6 pb-3 pe-4">
               <div className="footer-menu">
                 <img src="/images/MainImage3.png" alt="logo" className="pb-3" />
-                <p>Crafted by hand or printed with passion, <strong>DesigNagArtistry</strong> brings you fashion that's truly one of a kind.
-                        Wear the story. Wear the art.</p>
+                <p><strong>Designagartistry</strong> is Pakistan&apos;s premier luxury pret and couture destination, redefining modern ethnic fashion through handcrafted artistry, tonal embroidery, and runway-inspired silhouettes. Explore elevated designer luxury outfits, premium co-ord sets, and festive formals for the woman who embodies timeless sophistication.</p>
               </div>
               <div className="copyright">
                 <p>© Copyright 2026. <strong>DesigNagArtistry</strong> by <a target="_blank">Mahnoor Siddiqui</a>
