@@ -12,7 +12,7 @@ export default function Footer() {
                 <p><strong>Designagartistry</strong> is Pakistan&apos;s premier luxury pret and couture destination, redefining modern ethnic fashion through handcrafted artistry, tonal embroidery, and runway-inspired silhouettes. Explore elevated designer luxury outfits, premium co-ord sets, and festive formals for the woman who embodies timeless sophistication.</p>
               </div>
               <div className="copyright">
-                <p>© Copyright 2026. <strong>DesigNagArtistry</strong> by <a target="_blank">Mahnoor Siddiqui</a>
+                <p>© Copyright 2026. <strong>DesigNagArtistry</strong> by <a target="_blank">Siddiqui’s</a>
                 </p>
               </div>
             </div>
