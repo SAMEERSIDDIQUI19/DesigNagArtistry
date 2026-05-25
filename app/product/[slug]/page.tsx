@@ -16,6 +16,7 @@ interface Product {
   isOnSale: boolean;
   stock: number;
   thumbnail: string | null;
+  sizeChart: string | null;
   weight: number | null;
   sku: string | null;
   brand: string | null;
@@ -53,7 +54,6 @@ export default function ProductDetailPage() {
   const [showLightbox, setShowLightbox] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
-  const [sizeChartUrl, setSizeChartUrl] = useState<string | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || !imageRef.current) return;
@@ -138,16 +138,6 @@ export default function ProductDetailPage() {
         setAllImages(allProductImages);
         setSelectedImage(allProductImages.length > 0 ? allProductImages[0] : null);
 
-        // Check if a size chart image exists for this product
-        try {
-          const scRes = await fetch(`/api/upload/sizechart?productId=${data.id}`);
-          if (scRes.ok) {
-            const scData = await scRes.json();
-            setSizeChartUrl(scData.exists ? scData.url : null);
-          }
-        } catch {
-          setSizeChartUrl(null);
-        }
       } else {
         console.error("Failed to fetch product:", data.error);
       }
@@ -331,7 +321,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Size Chart Accordion */}
-            {sizeChartUrl && (
+            {product.sizeChart && (
               <div className="mb-6">
                 <button
                   type="button"
@@ -354,7 +344,7 @@ export default function ProductDetailPage() {
                 {sizeChartOpen && (
                   <div className="mt-1 border border-gray-200 rounded-b-lg overflow-hidden bg-white p-3">
                     <img
-                      src={sizeChartUrl}
+                      src={product.sizeChart}
                       alt={`Size chart for ${product.name}`}
                       className="w-full h-auto object-contain"
                     />
