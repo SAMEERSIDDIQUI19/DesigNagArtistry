@@ -53,16 +53,21 @@ export async function POST(request: NextRequest) {
     }
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const mimeType = file.type || "image/png";
+    let url: string;
 
-    const uploadDir = join(/*turbopackIgnore: true*/ process.cwd(), "public", "uploads", "sizechart");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
+    try {
+      const uploadDir = join(/*turbopackIgnore: true*/ process.cwd(), "public", "uploads", "sizechart");
+      if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true });
+      }
+      const filepath = getSizeChartPath(productId);
+      await writeFile(filepath, fileBuffer);
+      url = `/uploads/sizechart/${productId}_image.png`;
+    } catch {
+      // Filesystem is read-only (e.g. Vercel) — store as base64 data URL in the DB
+      url = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
     }
-
-    const filepath = getSizeChartPath(productId);
-    await writeFile(filepath, fileBuffer);
-
-    const url = `/uploads/sizechart/${productId}_image.png`;
 
     await prisma.product.update({
       where: { id: productId },
@@ -85,9 +90,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "productId is required" }, { status: 400 });
     }
 
-    const filepath = getSizeChartPath(productId);
-    if (existsSync(filepath)) {
-      await unlink(filepath);
+    try {
+      const filepath = getSizeChartPath(productId);
+      if (existsSync(filepath)) {
+        await unlink(filepath);
+      }
+    } catch {
+      // Filesystem may be read-only in production, ignore
     }
 
     await prisma.product.update({
