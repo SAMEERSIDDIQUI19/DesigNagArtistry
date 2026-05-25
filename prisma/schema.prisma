@@ -97,6 +97,7 @@ model Product {
   featured        Boolean         @default(false)
   metaTitle       String?         @map("meta_title") @db.VarChar(255)
   metaDescription String?         @map("meta_description") @db.Text
+  sizeChart       String?         @map("size_chart") @db.Text
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @default(now()) @map("updated_at")
 

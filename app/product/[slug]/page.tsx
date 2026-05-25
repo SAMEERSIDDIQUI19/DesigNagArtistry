@@ -16,6 +16,7 @@ interface Product {
   isOnSale: boolean;
   stock: number;
   thumbnail: string | null;
+  sizeChart: string | null;
   weight: number | null;
   sku: string | null;
   brand: string | null;
@@ -137,17 +138,7 @@ export default function ProductDetailPage() {
         
         setAllImages(allProductImages);
         setSelectedImage(allProductImages.length > 0 ? allProductImages[0] : null);
-
-        // Check if a size chart image exists for this product
-        try {
-          const scRes = await fetch(`/api/upload/sizechart?productId=${data.id}`);
-          if (scRes.ok) {
-            const scData = await scRes.json();
-            setSizeChartUrl(scData.exists ? scData.url : null);
-          }
-        } catch {
-          setSizeChartUrl(null);
-        }
+        setSizeChartUrl(data.sizeChart || null);
       } else {
         console.error("Failed to fetch product:", data.error);
       }

@@ -18,7 +18,7 @@ export default function EditProductPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sizeChartFile, setSizeChartFile] = useState<File | null>(null);
-  const [sizeChartExists, setSizeChartExists] = useState(true);
+  const [existingSizeChartUrl, setExistingSizeChartUrl] = useState<string | null>(null);
   const [uploadingSizeChart, setUploadingSizeChart] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
@@ -111,6 +111,7 @@ export default function EditProductPage() {
           metaDescription: product.metaDescription || "",
           categoryId: product.categoryId || "",
         });
+        setExistingSizeChartUrl(product.sizeChart || null);
       }
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -275,7 +276,7 @@ export default function EditProductPage() {
   const handleDeleteSizeChart = async () => {
     try {
       await fetch(`/api/upload/sizechart?productId=${params.id as string}`, { method: "DELETE" });
-      setSizeChartExists(false);
+      setExistingSizeChartUrl(null);
       setSizeChartFile(null);
     } catch (error) {
       console.error("Error deleting size chart:", error);
@@ -625,15 +626,14 @@ export default function EditProductPage() {
               {sizeChartFile && (
                 <p className="text-sm text-gray-600">{sizeChartFile.name} selected</p>
               )}
-              {sizeChartExists && !sizeChartFile && (
+              {existingSizeChartUrl && !sizeChartFile && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-600 mb-1">Current size chart:</p>
                   <div className="relative inline-block">
                     <img
-                      src={`/uploads/sizechart/${params.id as string}_image.png`}
+                      src={existingSizeChartUrl}
                       alt="Size chart"
                       className="max-h-48 rounded-lg border"
-                      onError={() => setSizeChartExists(false)}
                     />
                     <button
                       type="button"

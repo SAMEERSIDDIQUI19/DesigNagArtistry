@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { join } from "path";
 import { existsSync } from "fs";
 import { writeFile, mkdir, unlink } from "fs/promises";
+import { prisma } from "@/lib/prisma";
 
 const getSizeChartPath = (productId: string) =>
   join(/*turbopackIgnore: true*/ process.cwd(), "public", "uploads", "sizechart", `${productId}_image.png`);
@@ -15,13 +16,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "productId is required" }, { status: 400 });
     }
 
-    const filepath = getSizeChartPath(productId);
-    const exists = existsSync(filepath);
-
-    return NextResponse.json({
-      exists,
-      url: exists ? `/uploads/sizechart/${productId}_image.png` : null,
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { sizeChart: true },
     });
+
+    const url = product?.sizeChart || null;
+    return NextResponse.json({ exists: !!url, url });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: `Check failed: ${msg}` }, { status: 500 });
@@ -61,7 +62,14 @@ export async function POST(request: NextRequest) {
     const filepath = getSizeChartPath(productId);
     await writeFile(filepath, fileBuffer);
 
-    return NextResponse.json({ url: `/uploads/sizechart/${productId}_image.png` });
+    const url = `/uploads/sizechart/${productId}_image.png`;
+
+    await prisma.product.update({
+      where: { id: productId },
+      data: { sizeChart: url },
+    });
+
+    return NextResponse.json({ url });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: `Upload failed: ${msg}` }, { status: 500 });
@@ -81,6 +89,11 @@ export async function DELETE(request: NextRequest) {
     if (existsSync(filepath)) {
       await unlink(filepath);
     }
+
+    await prisma.product.update({
+      where: { id: productId },
+      data: { sizeChart: null },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
