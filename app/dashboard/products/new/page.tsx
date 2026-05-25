@@ -13,6 +13,7 @@ export default function NewProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [sizes, setSizes] = useState<{ size: string; stock: string }[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -102,6 +103,23 @@ export default function NewProductPage() {
         return;
       }
 
+      const product = await response.json();
+
+      // Save size variants if any
+      const validSizes = sizes.filter(s => s.size.trim());
+      if (validSizes.length > 0) {
+        await fetch(`/api/admin/products/${product.id}/variants`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            sizes: validSizes.map(s => ({ size: s.size.trim(), stock: parseInt(s.stock) || 0 })),
+          }),
+        });
+      }
+
       router.push("/dashboard/products");
     } catch (error) {
       console.error("Error creating product:", error);
@@ -117,6 +135,12 @@ export default function NewProductPage() {
       ...formData,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     });
+  };
+
+  const addSize = () => setSizes(prev => [...prev, { size: "", stock: "0" }]);
+  const removeSize = (index: number) => setSizes(prev => prev.filter((_, i) => i !== index));
+  const updateSize = (index: number, field: "size" | "stock", value: string) => {
+    setSizes(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
   };
 
   const handleFileUploadWithProductId = async (file: File, productId: string) => {
@@ -363,6 +387,51 @@ export default function NewProductPage() {
             />
           </div>
 
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Sizes &amp; Stock</label>
+              <button
+                type="button"
+                onClick={addSize}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                + Add Size
+              </button>
+            </div>
+            {sizes.length === 0 ? (
+              <p className="text-sm text-gray-400">No sizes added. Click &quot;+ Add Size&quot; to add size options with individual stock quantities.</p>
+            ) : (
+              <div className="space-y-2">
+                {sizes.map((item, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="e.g. XS, S, M, L, XL"
+                      value={item.size}
+                      onChange={(e) => updateSize(index, "size", e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Stock"
+                      min="0"
+                      value={item.stock}
+                      onChange={(e) => updateSize(index, "stock", e.target.value)}
+                      className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeSize(index)}
+                      className="px-3 py-2 text-red-500 hover:text-red-700 font-bold"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

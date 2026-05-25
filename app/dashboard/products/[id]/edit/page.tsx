@@ -20,6 +20,7 @@ export default function EditProductPage() {
   const [sizeChartFile, setSizeChartFile] = useState<File | null>(null);
   const [existingSizeChartUrl, setExistingSizeChartUrl] = useState<string | null>(null);
   const [uploadingSizeChart, setUploadingSizeChart] = useState(false);
+  const [sizes, setSizes] = useState<{ size: string; stock: string }[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -112,6 +113,11 @@ export default function EditProductPage() {
           categoryId: product.categoryId || "",
         });
         setExistingSizeChartUrl(product.sizeChart || null);
+        setSizes(
+          (product.variants as any[])
+            .filter((v: any) => v.variantName === "size")
+            .map((v: any) => ({ size: v.variantValue, stock: String(v.stock) }))
+        );
       }
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -231,6 +237,20 @@ export default function EditProductPage() {
         }
       }
 
+      // Save size variants
+      await fetch(`/api/admin/products/${productId}/variants`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          sizes: sizes
+            .filter(s => s.size.trim())
+            .map(s => ({ size: s.size.trim(), stock: parseInt(s.stock) || 0 })),
+        }),
+      });
+
       router.push("/dashboard/products");
     } catch (error) {
       console.error("Error updating product:", error);
@@ -266,6 +286,12 @@ export default function EditProductPage() {
       ...formData,
       additionalImages: Array.from(files),
     });
+  };
+
+  const addSize = () => setSizes(prev => [...prev, { size: "", stock: "0" }]);
+  const removeSize = (index: number) => setSizes(prev => prev.filter((_, i) => i !== index));
+  const updateSize = (index: number, field: "size" | "stock", value: string) => {
+    setSizes(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
   };
 
   const handleSizeChartFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -646,6 +672,51 @@ export default function EditProductPage() {
                 </div>
               )}
             </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Sizes &amp; Stock</label>
+              <button
+                type="button"
+                onClick={addSize}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                + Add Size
+              </button>
+            </div>
+            {sizes.length === 0 ? (
+              <p className="text-sm text-gray-400">No sizes added. Click &quot;+ Add Size&quot; to add size options with individual stock quantities.</p>
+            ) : (
+              <div className="space-y-2">
+                {sizes.map((item, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="e.g. XS, S, M, L, XL"
+                      value={item.size}
+                      onChange={(e) => updateSize(index, "size", e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Stock"
+                      min="0"
+                      value={item.stock}
+                      onChange={(e) => updateSize(index, "stock", e.target.value)}
+                      className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeSize(index)}
+                      className="px-3 py-2 text-red-500 hover:text-red-700 font-bold"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>

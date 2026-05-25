@@ -213,8 +213,26 @@ export async function POST(request: NextRequest) {
           quantity: item.quantity,
           price: finalPrice,
           total: finalPrice * item.quantity,
+          variantId: item.variantId || null,
         },
       });
+    }
+
+    // Decrement stock for each ordered item
+    for (const item of cartItems) {
+      // Decrement overall product stock (floor at 0)
+      await prisma.product.updateMany({
+        where: { id: item.product.id, stock: { gte: item.quantity } },
+        data: { stock: { decrement: item.quantity } },
+      });
+
+      // Decrement variant (size) stock if a size was selected
+      if (item.variantId) {
+        await prisma.productVariant.updateMany({
+          where: { id: item.variantId, stock: { gte: item.quantity } },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
     }
 
     // Record payment method

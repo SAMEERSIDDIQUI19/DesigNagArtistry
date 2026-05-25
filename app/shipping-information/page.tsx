@@ -13,21 +13,21 @@ const shippingZones = [
     cities: "Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad",
     standard: "2–4 business days",
     express: "1–2 business days",
-    charge: "Rs. 150 – 200",
+    charge: "Rs. 250 – 300",
   },
   {
     zone: "Other Cities",
     cities: "Multan, Peshawar, Quetta, Sialkot, Gujranwala, and more",
     standard: "3–6 business days",
     express: "2–3 business days",
-    charge: "Rs. 200 – 300",
+    charge: "Rs. 300 – 400",
   },
   {
     zone: "Remote Areas",
     cities: "Rural towns, FATA regions, AJK, Gilgit-Baltistan",
     standard: "5–8 business days",
     express: "Not available",
-    charge: "Rs. 300 – 400",
+    charge: "Rs. 400 – 600",
   },
 ];
 

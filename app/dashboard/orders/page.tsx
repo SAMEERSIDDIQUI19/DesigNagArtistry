@@ -442,11 +442,11 @@ export default function OrdersPage() {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm text-gray-900 truncate">{item.productName}</p>
                           {item.variant && (
-                            <p className="text-xs text-gray-500">
-                              {`${item.variant.variantName}: ${item.variant.variantValue}`}
-                            </p>
+                            <span className="inline-flex items-center px-2 py-0.5 mt-0.5 rounded bg-stone-100 text-stone-700 text-xs font-semibold border border-stone-200">
+                              {item.variant.variantName.charAt(0).toUpperCase() + item.variant.variantName.slice(1)}: {item.variant.variantValue}
+                            </span>
                           )}
-                          <p className="text-xs text-gray-500">Qty: {item.quantity} × Rs. {Number(item.price).toFixed(2)}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity} × Rs. {Number(item.price).toFixed(2)}</p>
                         </div>
                         <p className="font-semibold text-sm text-gray-900 flex-shrink-0">Rs. {Number(item.total).toFixed(2)}</p>
                       </div>

@@ -31,9 +31,9 @@ interface Product {
   }[];
   variants: {
     id: string;
-    size: string | null;
-    color: string | null;
-    price: number;
+    variantName: string;
+    variantValue: string;
+    price: number | null;
     stock: number;
   }[];
 }
@@ -372,27 +372,30 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Variants */}
-            {product.variants.length > 0 && (
+            {/* Select Size */}
+            {product.variants.filter(v => v.variantName === "size").length > 0 && (
               <div className="mb-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Variants</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">Select Size</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.variants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      onClick={() => setSelectedVariant(variant.id)}
-                      disabled={variant.stock === 0}
-                      className={`px-4 py-2 border rounded-lg ${
-                        selectedVariant === variant.id
-                          ? "border-blue-600 bg-blue-50"
-                          : "border-gray-300 hover:border-gray-400"
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
-                    >
-                      {variant.size && `Size: ${variant.size}`}
-                      {variant.size && variant.color && " - "}
-                      {variant.color && `Color: ${variant.color}`}
-                    </button>
-                  ))}
+                  {product.variants
+                    .filter(v => v.variantName === "size")
+                    .map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => { setSelectedVariant(variant.id); setQuantity(1); }}
+                        disabled={variant.stock === 0}
+                        className={`px-4 py-2 border rounded-lg font-medium text-sm transition-colors ${
+                          selectedVariant === variant.id
+                            ? "border-black bg-black text-white"
+                            : variant.stock === 0
+                            ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                            : "border-gray-300 hover:border-black text-gray-900"
+                        }`}
+                      >
+                        {variant.variantValue}
+                        {variant.stock === 0 && <span className="ml-1 text-xs">(Out of Stock)</span>}
+                      </button>
+                    ))}
                 </div>
               </div>
             )}
@@ -412,25 +415,44 @@ export default function ProductDetailPage() {
                   {quantity}
                 </div>
                 <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  onClick={() => {
+                    const maxQty = selectedVariant
+                      ? (product.variants.find(v => v.id === selectedVariant)?.stock ?? product.stock)
+                      : product.stock;
+                    setQuantity(Math.min(maxQty, quantity + 1));
+                  }}
                   className="px-4 py-2 border border-gray-300 rounded-r-lg hover:bg-gray-50 bg-white text-black"
-                  disabled={quantity >= product.stock}
+                  disabled={quantity >= (selectedVariant
+                    ? (product.variants.find(v => v.id === selectedVariant)?.stock ?? product.stock)
+                    : product.stock)}
                 >
                   +
                 </button>
               </div>
               <p className="text-sm text-gray-500 mt-1">
-                {product.stock} items available
+                {selectedVariant
+                  ? `${product.variants.find(v => v.id === selectedVariant)?.stock ?? 0} items available`
+                  : `${product.stock} items available`}
               </p>
             </div>
 
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              disabled={product.stock === 0 || product.status !== "active"}
+              disabled={
+                product.status !== "active" ||
+                (product.variants.filter(v => v.variantName === "size").length > 0 && !selectedVariant) ||
+                (selectedVariant
+                  ? (product.variants.find(v => v.id === selectedVariant)?.stock ?? 0) === 0
+                  : product.stock === 0)
+              }
               className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg font-semibold"
             >
-              {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+              {product.variants.filter(v => v.variantName === "size").length > 0 && !selectedVariant
+                ? "Select a Size"
+                : selectedVariant
+                ? ((product.variants.find(v => v.id === selectedVariant)?.stock ?? 0) === 0 ? "Out of Stock" : "Add to Cart")
+                : product.stock === 0 ? "Out of Stock" : "Add to Cart"}
             </button>
 
             <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3 sm:space-x-4">
