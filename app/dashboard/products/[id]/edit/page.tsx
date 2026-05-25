@@ -17,6 +17,9 @@ export default function EditProductPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [sizeChartFile, setSizeChartFile] = useState<File | null>(null);
+  const [sizeChartExists, setSizeChartExists] = useState(true);
+  const [uploadingSizeChart, setUploadingSizeChart] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -210,6 +213,23 @@ export default function EditProductPage() {
         }
       }
 
+      // Upload size chart if a new file was selected
+      if (sizeChartFile) {
+        try {
+          setUploadingSizeChart(true);
+          const scForm = new FormData();
+          const compressed = await compressImage(sizeChartFile);
+          scForm.append("file", compressed);
+          scForm.append("productId", productId);
+          await fetch("/api/upload/sizechart", { method: "POST", body: scForm });
+        } catch (uploadError) {
+          console.error("Size chart upload failed:", uploadError);
+          alert("Product saved but size chart upload failed. Please try again.");
+        } finally {
+          setUploadingSizeChart(false);
+        }
+      }
+
       router.push("/dashboard/products");
     } catch (error) {
       console.error("Error updating product:", error);
@@ -245,6 +265,21 @@ export default function EditProductPage() {
       ...formData,
       additionalImages: Array.from(files),
     });
+  };
+
+  const handleSizeChartFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setSizeChartFile(file);
+  };
+
+  const handleDeleteSizeChart = async () => {
+    try {
+      await fetch(`/api/upload/sizechart?productId=${params.id as string}`, { method: "DELETE" });
+      setSizeChartExists(false);
+      setSizeChartFile(null);
+    } catch (error) {
+      console.error("Error deleting size chart:", error);
+    }
   };
 
   const handleFileUploadWithProductId = async (file: File, productId: string) => {
@@ -578,6 +613,43 @@ export default function EditProductPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              Size Chart Image
+            </label>
+            <div className="space-y-2">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleSizeChartFileSelect}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {sizeChartFile && (
+                <p className="text-sm text-gray-600">{sizeChartFile.name} selected</p>
+              )}
+              {sizeChartExists && !sizeChartFile && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600 mb-1">Current size chart:</p>
+                  <div className="relative inline-block">
+                    <img
+                      src={`/uploads/sizechart/${params.id as string}_image.png`}
+                      alt="Size chart"
+                      className="max-h-48 rounded-lg border"
+                      onError={() => setSizeChartExists(false)}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleDeleteSizeChart}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Meta Title
             </label>
             <input
@@ -612,10 +684,10 @@ export default function EditProductPage() {
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploadingSizeChart}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? "Saving..." : "Update Product"}
+              {saving || uploadingSizeChart ? "Saving..." : "Update Product"}
             </button>
           </div>
         </form>

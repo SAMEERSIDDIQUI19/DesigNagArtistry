@@ -114,7 +114,7 @@ export default function ProductsPage() {
                     <td className="py-3 px-4">{product.name}</td>
                     <td className="py-3 px-4">{product.sku || "-"}</td>
                     <td className="py-3 px-4">{product.category?.name || "-"}</td>
-                    <td className="py-3 px-4">${Number(product.price).toFixed(2)}</td>
+                    <td className="py-3 px-4">PKR {Number(product.price).toFixed(2)}</td>
                     <td className="py-3 px-4">{product.stock}</td>
                     <td className="py-3 px-4">
                       <span

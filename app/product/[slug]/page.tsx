@@ -52,6 +52,8 @@ export default function ProductDetailPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showLightbox, setShowLightbox] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [sizeChartOpen, setSizeChartOpen] = useState(false);
+  const [sizeChartUrl, setSizeChartUrl] = useState<string | null>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || !imageRef.current) return;
@@ -135,6 +137,17 @@ export default function ProductDetailPage() {
         
         setAllImages(allProductImages);
         setSelectedImage(allProductImages.length > 0 ? allProductImages[0] : null);
+
+        // Check if a size chart image exists for this product
+        try {
+          const scRes = await fetch(`/api/upload/sizechart?productId=${data.id}`);
+          if (scRes.ok) {
+            const scData = await scRes.json();
+            setSizeChartUrl(scData.exists ? scData.url : null);
+          }
+        } catch {
+          setSizeChartUrl(null);
+        }
       } else {
         console.error("Failed to fetch product:", data.error);
       }
@@ -230,7 +243,7 @@ export default function ProductDetailPage() {
                     ref={imageRef}
                     src={selectedImage}
                     alt={product.name}
-                    className="w-full h-96 object-cover cursor-pointer"
+                    className="w-full object-contain cursor-pointer"
                     onClick={() => handleImageClick(allImages.indexOf(selectedImage))}
                   />
                   {showMagnifier && (
@@ -313,6 +326,39 @@ export default function ProductDetailPage() {
                   />
                 ) : (
                   <p className="text-gray-600 whitespace-pre-line">{product.description}</p>
+                )}
+              </div>
+            )}
+
+            {/* Size Chart Accordion */}
+            {sizeChartUrl && (
+              <div className="mb-6">
+                <button
+                  type="button"
+                  onClick={() => setSizeChartOpen(!sizeChartOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <span className="font-semibold text-gray-900">Size Chart</span>
+                  <svg
+                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${sizeChartOpen ? "rotate-180" : ""}`}
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                {sizeChartOpen && (
+                  <div className="mt-1 border border-gray-200 rounded-b-lg overflow-hidden bg-white p-3">
+                    <img
+                      src={sizeChartUrl}
+                      alt={`Size chart for ${product.name}`}
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
                 )}
               </div>
             )}
