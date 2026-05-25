@@ -18,6 +18,7 @@ export default function EditProductPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sizeChartFile, setSizeChartFile] = useState<File | null>(null);
+  const [sizeChartExists, setSizeChartExists] = useState(true);
   const [uploadingSizeChart, setUploadingSizeChart] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
@@ -33,7 +34,6 @@ export default function EditProductPage() {
     isOnSale: false,
     stock: "0",
     thumbnail: "",
-    sizeChart: "",
     thumbnailFiles: [] as File[],
     additionalImages: [] as File[],
     weight: "",
@@ -102,7 +102,6 @@ export default function EditProductPage() {
           isOnSale: product.isOnSale,
           stock: product.stock.toString(),
           thumbnail: product.thumbnail || "",
-          sizeChart: product.sizeChart || "",
           thumbnailFiles: [],
           additionalImages: [],
           weight: product.weight ? product.weight.toString() : "",
@@ -141,7 +140,6 @@ export default function EditProductPage() {
         isOnSale: formData.isOnSale,
         stock: parseInt(formData.stock),
         thumbnail: formData.thumbnail,
-        sizeChart: formData.sizeChart || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         status: formData.status,
         featured: formData.featured,
@@ -215,16 +213,15 @@ export default function EditProductPage() {
         }
       }
 
-      // Upload size chart if a new file was selected, then store URL in DB
+      // Upload size chart if a new file was selected
       if (sizeChartFile) {
         try {
           setUploadingSizeChart(true);
-          const sizeChartUrl = await handleFileUploadWithProductId(sizeChartFile, productId);
-          await fetch(`/api/admin/products/${productId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ sizeChart: sizeChartUrl }),
-          });
+          const scForm = new FormData();
+          const compressed = await compressImage(sizeChartFile);
+          scForm.append("file", compressed);
+          scForm.append("productId", productId);
+          await fetch("/api/upload/sizechart", { method: "POST", body: scForm });
         } catch (uploadError) {
           console.error("Size chart upload failed:", uploadError);
           alert("Product saved but size chart upload failed. Please try again.");
@@ -277,16 +274,11 @@ export default function EditProductPage() {
 
   const handleDeleteSizeChart = async () => {
     try {
-      const token = localStorage.getItem("admin_token");
-      await fetch(`/api/admin/products/${params.id as string}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ sizeChart: null }),
-      });
-      setFormData((prev) => ({ ...prev, sizeChart: "" }));
+      await fetch(`/api/upload/sizechart?productId=${params.id as string}`, { method: "DELETE" });
+      setSizeChartExists(false);
       setSizeChartFile(null);
     } catch (error) {
-      console.error("Error clearing size chart:", error);
+      console.error("Error deleting size chart:", error);
     }
   };
 
@@ -633,14 +625,15 @@ export default function EditProductPage() {
               {sizeChartFile && (
                 <p className="text-sm text-gray-600">{sizeChartFile.name} selected</p>
               )}
-              {formData.sizeChart && !sizeChartFile && (
+              {sizeChartExists && !sizeChartFile && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-600 mb-1">Current size chart:</p>
                   <div className="relative inline-block">
                     <img
-                      src={formData.sizeChart}
+                      src={`/uploads/sizechart/${params.id as string}_image.png`}
                       alt="Size chart"
                       className="max-h-48 rounded-lg border"
+                      onError={() => setSizeChartExists(false)}
                     />
                     <button
                       type="button"

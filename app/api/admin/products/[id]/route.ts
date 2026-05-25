@@ -82,7 +82,6 @@ export async function PUT(
     if (body.isOnSale !== undefined)        data.isOnSale = body.isOnSale;
     if (body.stock !== undefined)           data.stock = body.stock;
     if (body.thumbnail !== undefined)       data.thumbnail = body.thumbnail || null;
-    if (body.sizeChart !== undefined)       data.sizeChart = body.sizeChart || null;
     if (body.weight !== undefined)          data.weight = body.weight || null;
     if (body.status !== undefined)          data.status = body.status;
     if (body.featured !== undefined)        data.featured = body.featured;

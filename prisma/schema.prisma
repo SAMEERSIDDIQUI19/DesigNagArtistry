@@ -92,7 +92,6 @@ model Product {
   isOnSale        Boolean         @default(false) @map("is_on_sale")
   stock           Int             @default(0)
   thumbnail       String?         @db.Text
-  sizeChart       String?         @map("size_chart") @db.Text
   weight          Decimal?        @db.Decimal(10, 2)
   status          String          @default("active") @db.VarChar(20)
   featured        Boolean         @default(false)
