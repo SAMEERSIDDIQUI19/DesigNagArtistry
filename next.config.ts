@@ -38,48 +38,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async redirects() {
-    const domain = "www.designagartistry.com";
-    return [
-      // HTTP to HTTPS redirect
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "header",
-            key: "x-forwarded-proto",
-            value: "http",
-          },
-        ],
-        destination: "https://www.designagartistry.com/:path*",
-        permanent: true,
-      },
-      // Non-WWW to WWW redirect
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "designagartistry.com",
-          },
-        ],
-        destination: "https://www.designagartistry.com/:path*",
-        permanent: true,
-      },
-      // Trailing slash normalization (remove trailing slashes)
-      {
-        source: "/:path*/",
-        destination: "/:path*",
-        permanent: true,
-      },
-      // Redirect old URLs if needed (example)
-      // {
-      //   source: "/old-page",
-      //   destination: "/new-page",
-      //   permanent: true,
-      // },
-    ];
-  },
 };
 
 export default nextConfig;

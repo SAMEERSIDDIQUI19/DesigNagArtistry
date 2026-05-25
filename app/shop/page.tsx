@@ -1,56 +1,8 @@
-import type { Metadata } from "next";
-import { getPrimaryThumbnail } from "@/lib/thumbnail-utils";
-
-export const metadata: Metadata = {
-  title: "Shop Luxury Pret & Couture | Designagartistry",
-  description: "Explore Designagartistry's premium luxury fashion collection. Handcrafted modern ethnic couture, co-ord sets, and designer wear for Pakistan's modern muse.",
-  keywords: [
-    "luxury pret Pakistan",
-    "designer ethnic wear",
-    "modern couture",
-    "co-ord sets",
-    "premium fashion",
-    "handcrafted outfits",
-    "luxury pret collection",
-    "designer wear Pakistan",
-    "contemporary ethnic fashion",
-    "ready-to-wear luxury",
-  ],
-  openGraph: {
-    type: "website",
-    url: "https://www.designagartistry.com/shop",
-    siteName: "Designagartistry",
-    title: "Shop Luxury Pret & Couture | Designagartistry",
-    description: "Explore Designagartistry's premium luxury fashion collection. Handcrafted modern ethnic couture, co-ord sets, and designer wear for Pakistan's modern muse.",
-    images: [
-      {
-        url: "https://www.designagartistry.com/images/MainImage3.png",
-        width: 1200,
-        height: 630,
-        alt: "Designagartistry Luxury Collection",
-      },
-    ],
-  },
-  alternates: {
-    canonical: "https://www.designagartistry.com/shop",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-};
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getPrimaryThumbnail } from "@/lib/thumbnail-utils";
 
 interface Product {
   id: string;

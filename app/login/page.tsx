@@ -1,13 +1,3 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Customer Login | Designagartistry",
-  robots: {
-    index: false,
-    follow: true,
-  },
-};
-
 "use client";
 
 import { useState } from "react";
