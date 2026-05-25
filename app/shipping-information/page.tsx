@@ -2,9 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Shipping Information | DesigNagArtistry",
+  title: "Shipping Information",
   description:
-    "Learn about DesigNagArtistry's shipping policy — delivery timelines, charges, tracking, and coverage areas across Pakistan and internationally.",
+    "Learn about Designagartistry's shipping policy — delivery timelines, charges, order tracking, and coverage areas across Pakistan and internationally.",
+  alternates: {
+    canonical: "https://www.designagartistry.com/shipping-information",
+  },
+  openGraph: {
+    title: "Shipping Information | Designagartistry",
+    description: "Delivery timelines, charges, order tracking, and coverage areas across Pakistan and internationally.",
+    url: "https://www.designagartistry.com/shipping-information",
+    type: "website",
+  },
 };
 
 const shippingZones = [

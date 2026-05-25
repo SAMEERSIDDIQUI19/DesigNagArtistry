@@ -2,9 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions | DesigNagArtistry",
+  title: "Terms & Conditions",
   description:
-    "Read DesigNagArtistry's Terms & Conditions. By shopping with us you agree to these terms governing purchases, intellectual property, and use of our website.",
+    "Read Designagartistry's Terms & Conditions. By shopping with us you agree to these terms governing purchases, intellectual property, and use of our website.",
+  alternates: {
+    canonical: "https://www.designagartistry.com/terms-conditions",
+  },
+  openGraph: {
+    title: "Terms & Conditions | Designagartistry",
+    description: "Terms governing purchases, intellectual property, and use of the Designagartistry website.",
+    url: "https://www.designagartistry.com/terms-conditions",
+    type: "website",
+  },
 };
 
 const terms = [

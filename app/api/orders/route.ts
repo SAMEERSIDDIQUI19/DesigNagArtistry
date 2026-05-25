@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
       fullName,
       order.orderNumber,
       order.createdAt,
-      cartItems.map(item => ({
+      cartItems.map((item: { product: { name: string; price: number | string }; quantity: number }) => ({
         productName: item.product.name,
         quantity: item.quantity,
         price: typeof item.product.price === 'string' ? parseFloat(item.product.price) : item.product.price,

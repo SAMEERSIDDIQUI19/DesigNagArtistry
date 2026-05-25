@@ -10,10 +10,15 @@ function getPrismaClient() {
     return globalForPrisma.prisma;
   }
 
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
+  const rawUrl = process.env.DATABASE_URL;
+  if (!rawUrl) {
     throw new Error("DATABASE_URL is not set in environment variables");
   }
+
+  const connectionString = rawUrl.replace(
+    /sslmode=(prefer|require|verify-ca)/gi,
+    "sslmode=verify-full"
+  );
 
   const client = new PrismaClient({
     adapter: new PrismaPg(connectionString),

@@ -2,9 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Return & Exchange Policy | DesigNagArtistry",
+  title: "Return & Exchange Policy",
   description:
-    "Read DesigNagArtistry's return and exchange policy. Easy 7-day returns on eligible items. We stand behind every handcrafted and printed fashion piece we sell.",
+    "Read Designagartistry's return and exchange policy. Easy 7-day returns on eligible items. We stand behind every handcrafted luxury fashion piece we sell.",
+  alternates: {
+    canonical: "https://www.designagartistry.com/return-policy",
+  },
+  openGraph: {
+    title: "Return & Exchange Policy | Designagartistry",
+    description: "Easy 7-day returns on eligible items. Hassle-free exchanges for size or colour.",
+    url: "https://www.designagartistry.com/return-policy",
+    type: "website",
+  },
 };
 
 const sections = [
