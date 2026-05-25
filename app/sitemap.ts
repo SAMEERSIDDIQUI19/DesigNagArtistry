@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
+import { PrismaClient } from '@prisma/client';
 
-// Define your site URL
+const prisma = new PrismaClient();
 const SITE_URL = 'https://www.designagartistry.com';
 
 // Static pages that should always be in the sitemap
@@ -49,7 +50,7 @@ const staticPages = [
   },
 ];
 
-// Function to fetch dynamic product pages from your database
+// Function to fetch dynamic product pages from database
 async function getProductPages(): Promise<Array<{
   url: string;
   lastModified: Date;
@@ -57,21 +58,19 @@ async function getProductPages(): Promise<Array<{
   priority: number;
 }>> {
   try {
-    // Fetch products from your API
-    const response = await fetch(`${SITE_URL}/api/products`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'active',
+      },
+      select: {
+        slug: true,
+        updatedAt: true,
+      },
     });
     
-    if (!response.ok) {
-      console.error('Failed to fetch products for sitemap');
-      return [];
-    }
-    
-    const products = await response.json();
-    
-    return products.map((product: any) => ({
+    return products.map((product) => ({
       url: `${SITE_URL}/product/${product.slug}`,
-      lastModified: product.updatedAt ? new Date(product.updatedAt) : new Date(),
+      lastModified: product.updatedAt,
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }));
@@ -81,7 +80,7 @@ async function getProductPages(): Promise<Array<{
   }
 }
 
-// Function to fetch dynamic category/shop pages
+// Function to fetch dynamic category pages from database
 async function getCategoryPages(): Promise<Array<{
   url: string;
   lastModified: Date;
@@ -89,21 +88,19 @@ async function getCategoryPages(): Promise<Array<{
   priority: number;
 }>> {
   try {
-    // Fetch categories from your API
-    const response = await fetch(`${SITE_URL}/api/categories`, {
-      next: { revalidate: 3600 },
+    const categories = await prisma.category.findMany({
+      where: {
+        parentId: null, // Only top-level categories
+      },
+      select: {
+        slug: true,
+        createdAt: true,
+      },
     });
     
-    if (!response.ok) {
-      console.error('Failed to fetch categories for sitemap');
-      return [];
-    }
-    
-    const categories = await response.json();
-    
-    return categories.map((category: any) => ({
+    return categories.map((category) => ({
       url: `${SITE_URL}/shop?category=${category.slug}`,
-      lastModified: category.updatedAt ? new Date(category.updatedAt) : new Date(),
+      lastModified: category.createdAt,
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }));
@@ -114,7 +111,7 @@ async function getCategoryPages(): Promise<Array<{
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Fetch dynamic pages
+  // Fetch dynamic pages from database
   const [productPages, categoryPages] = await Promise.all([
     getProductPages(),
     getCategoryPages(),

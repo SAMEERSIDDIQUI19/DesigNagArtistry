@@ -1,3 +1,13 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Checkout | Designagartistry",
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
+
 "use client";
 
 import { useState, useEffect, type ChangeEvent, type FormEvent } from "react";

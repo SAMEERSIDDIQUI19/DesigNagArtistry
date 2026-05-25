@@ -1,9 +1,7 @@
-"use client";
+import type { Metadata } from "next";
+import { PrismaClient } from '@prisma/client';
 
-import { useEffect, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import React from "react";
+const prisma = new PrismaClient();
 
 interface Product {
   id: string;
@@ -37,6 +35,84 @@ interface Product {
     stock: number;
   }[];
 }
+
+// Generate metadata for product pages
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const product = await prisma.product.findUnique({
+    where: { slug: params.slug },
+    include: {
+      category: true,
+      images: true,
+    },
+  });
+
+  if (!product) {
+    return {
+      title: "Product Not Found | Designagartistry",
+    };
+  }
+
+  const title = `${product.name} | Designagartistry`;
+  const description = product.shortDescription || product.description || `Discover ${product.name} at Designagartistry. Premium luxury fashion with handcrafted artistry.`;
+  const truncatedDescription = description.length > 160 ? description.substring(0, 157) + '...' : description;
+
+  const imageUrl = product.images[0]?.imageUrl || 'https://www.designagartistry.com/images/MainImage3.png';
+
+  return {
+    title,
+    description: truncatedDescription,
+    keywords: [
+      product.name,
+      product.category?.name || 'luxury fashion',
+      'designer wear',
+      'premium couture',
+      'Pakistan fashion',
+      'handcrafted',
+    ],
+    openGraph: {
+      type: 'website',
+      url: `https://www.designagartistry.com/product/${product.slug}`,
+      siteName: 'Designagartistry',
+      title,
+      description: truncatedDescription,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: product.name,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: truncatedDescription,
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: `https://www.designagartistry.com/product/${product.slug}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+  };
+}
+
+"use client";
+
+import { useEffect, useState, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import React from "react";
 
 export default function ProductDetailPage() {
   const params = useParams();

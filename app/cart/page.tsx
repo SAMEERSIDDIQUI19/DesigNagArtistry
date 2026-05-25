@@ -1,3 +1,13 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Shopping Cart | Designagartistry",
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
+
 "use client";
 
 import { useEffect, useState } from "react";
