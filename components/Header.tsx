@@ -193,12 +193,14 @@ export default function Header() {
                           <svg className="search" width="18" height="18" viewBox="0 0 32 32" fill="currentColor">
                             <path d="M19 3C13.488 3 9 7.488 9 13c0 2.395.84 4.59 2.25 6.313L3.281 27.28l1.439 1.44l7.968-7.969A9.922 9.922 0 0 0 19 23c5.512 0 10-4.488 10-10S24.512 3 19 3zm0 2c4.43 0 8 3.57 8 8s-3.57 8-8 8s-8-3.57-8-8s3.57-8 8-8z" />
                           </svg>
+                          <span className="sr-only">Search</span>
                         </li>
                         <li className="pe-3">
                           <Link href="#" onClick={handleNavLinkClick}>
                             <svg className="user" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                               <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
                             </svg>
+                            <span className="sr-only">User Account</span>
                           </Link>
                         </li>
                         <li className="position-relative">
@@ -206,6 +208,7 @@ export default function Header() {
                             <svg className="cart" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                               <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                             </svg>
+                            <span className="sr-only">Shopping Cart</span>
                             {cartCount > 0 && (
                               <span className="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                 {cartCount}
@@ -260,12 +263,14 @@ export default function Header() {
                       <svg className="search" width="18" height="18" viewBox="0 0 32 32" fill="currentColor">
                         <path d="M19 3C13.488 3 9 7.488 9 13c0 2.395.84 4.59 2.25 6.313L3.281 27.28l1.439 1.44l7.968-7.969A9.922 9.922 0 0 0 19 23c5.512 0 10-4.488 10-10S24.512 3 19 3zm0 2c4.43 0 8 3.57 8 8s-3.57 8-8 8s-8-3.57-8-8s3.57-8 8-8z" />
                       </svg>
+                      <span className="sr-only">Search</span>
                     </li>
                     <li className="pe-3">
                       <Link href="#">
                         <svg className="user" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                           <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
                         </svg>
+                        <span className="sr-only">User Account</span>
                       </Link>
                     </li>
                     <li className="position-relative">
@@ -273,6 +278,7 @@ export default function Header() {
                         <svg className="cart" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
                           <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
+                        <span className="sr-only">Shopping Cart</span>
                         {cartCount > 0 && (
                           <span className="cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             {cartCount}

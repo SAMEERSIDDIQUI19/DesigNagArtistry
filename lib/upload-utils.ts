@@ -29,9 +29,8 @@ export async function saveUploadedFile(
 
     return productId ? `/uploads/${productId}/${filename}` : `/uploads/${filename}`;
   } catch (error) {
-    console.error("Filesystem upload failed, using inline image data:", error);
-    const fileBuffer = buffer || Buffer.from(await file.arrayBuffer());
-    return `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+    console.error("Filesystem upload failed:", error);
+    throw new Error(`Failed to save uploaded file: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 

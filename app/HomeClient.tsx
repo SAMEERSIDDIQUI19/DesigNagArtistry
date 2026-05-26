@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Swiper from 'swiper';
+import { Autoplay } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
 
 interface HomeContent {
@@ -66,6 +67,18 @@ interface HomeContent {
     buttonText: string;
     buttonLink: string;
   };
+  collections?: {
+    title: string;
+    luxePret: string;
+    festiveFormals: string;
+    couture: string;
+  };
+  artistry?: {
+    title: string;
+    description: string;
+    buttonText: string;
+    buttonLink: string;
+  };
 }
 
 export default function HomeClient({ initialContent }: { initialContent: HomeContent | null }) {
@@ -104,6 +117,12 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
       mainSwiperRef.current = new Swiper('.main-swiper', {
         speed: 500,
         loop: true,
+        modules: [Autoplay],
+        autoplay: {
+          delay: 10000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        },
         pagination: {
           el: '#billboard .swiper-pagination',
           clickable: true,
@@ -193,11 +212,12 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                       <div className="banner-item banner-item-responsive position-relative overflow-hidden">
                         <img
                           src={slide.image}
-                          alt={slide.title}
+                          alt={`Designagartistry luxury pret wear Pakistan — ${slide.title}`}
                           className="banner-fill-img"
                         />
                         <div className="banner-content padding-large">
-                          <h2 className="display-2 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
+                          <h1 className="display-2 text-capitalize pb-2 d-none" style={slide.titleColor ? { color: slide.titleColor } : {}}>Designagartistry | Premium Luxury Pret & Modern Ethnic Couture in Pakistan</h1>
+                          <h2 className="display-3 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
                           <p>{slide.description}</p>
                         </div>
                         <div className="billboard-btn-wrap">
@@ -226,7 +246,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
             {content.banner.items.map((item, index) => (
               <div key={index} className="col-md-4 banner-content-1 position-relative">
                 <div>
-                  <img src={item.image} className="img-fluid" alt={`Designagartistry — ${item.title}`} />
+                  <img src={item.image} className="img-fluid" alt={`Designagartistry ${item.title} — premium women's fashion Pakistan`} />
                 </div>
                 <div className="banner-content-text position-absolute">
                   <h2 className="display-5" style={item.titleColor ? { color: item.titleColor } : {}}>{item.title}</h2>
@@ -267,6 +287,41 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
         </div>
       </section>
 
+      {/* Collections Section */}
+      {content.collections && (
+        <section id="collections" className="padding-large">
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="display-header text-center pb-5">
+                  <h2 className="display-2 text-dark text-capitalize">{content.collections.title}</h2>
+                </div>
+              </div>
+            </div>
+            <div className="row g-5">
+              <div className="col-md-4">
+                <div className="collection-item text-center">
+                  <h3 className="display-5 text-primary pb-3">Luxe Pret & Co-Ord Sets</h3>
+                  <p>{content.collections.luxePret}</p>
+                </div>
+              </div>
+              <div className="col-md-4">
+                <div className="collection-item text-center">
+                  <h3 className="display-5 text-primary pb-3">Festive Formals & Luxury Lawn</h3>
+                  <p>{content.collections.festiveFormals}</p>
+                </div>
+              </div>
+              <div className="col-md-4">
+                <div className="collection-item text-center">
+                  <h3 className="display-5 text-primary pb-3">Couture & Evening Wear</h3>
+                  <p>{content.collections.couture}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Featured Products Section */}
       <section id="featured-products" className="product-store position-relative">
         <div className="container-fluid">
@@ -291,7 +346,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                         <div className="gold-frame-wrapper">
                           <div className="gold-frame gold-frame-1"></div>
                           <div className="gold-frame gold-frame-2"></div>
-                          <img src={product.image} alt={product.name} className="product-image img-fluid" />
+                          <img src={product.image} alt={`Designagartistry ${product.name} — designer ethnic wear Pakistan`} className="product-image img-fluid" />
                         </div>
                         <div className="cart-concern">
                           <h3 className="card-title text-capitalize pt-3 text-primary">
@@ -377,7 +432,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                         <div className="gold-frame-wrapper">
                           <div className="gold-frame gold-frame-1"></div>
                           <div className="gold-frame gold-frame-2"></div>
-                          <img src={product.image} alt={product.name} className="product-image img-fluid" />
+                          <img src={product.image} alt={`Designagartistry ${product.name} — modern ethnic couture Pakistan`} className="product-image img-fluid" />
                         </div>
                         <div className="cart-concern">
                           <h3 className="card-title text-capitalize pt-3 text-primary">
@@ -416,6 +471,28 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
           </div>
         </div>
       </section>
+
+      {/* Artistry Section */}
+      {content.artistry && (
+        <section id="artistry" className="padding-large">
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col-md-8 offset-md-2">
+                <div className="display-header text-center pb-5">
+                  <h2 className="display-2 text-dark text-capitalize">{content.artistry.title}</h2>
+                  <p className="pb-4">{content.artistry.description}</p>
+                  <Link href={content.artistry.buttonLink} className="btn btn-medium btn-arrow outline-dark position-relative">
+                    <span className="text-capitalize">{content.artistry.buttonText}</span>
+                    <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
+                      <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }
