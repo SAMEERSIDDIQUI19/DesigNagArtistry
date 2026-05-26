@@ -228,6 +228,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                             <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
                               <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
                             </svg>
+                            <span className="sr-only">Shop {slide.title}</span>
                           </Link>
                         </div>
                       </div>
@@ -257,6 +258,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                     <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
                       <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
                     </svg>
+                    <span className="sr-only">View {item.title}</span>
                   </Link>
                 </div>
               </div>
@@ -281,6 +283,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                     <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
                       <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
                     </svg>
+                    <span className="sr-only">Learn more about Designagartistry</span>
                   </Link>
                 </div>
               </div>
@@ -335,6 +338,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                 <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
                   <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
                 </svg>
+                <span className="sr-only">Shop all featured products</span>
               </Link>
             </div>
           </div>
@@ -428,6 +432,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                 <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
                   <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
                 </svg>
+                <span className="sr-only">Shop all trending products</span>
               </Link>
             </div>
             <div id="trending-swiper" className="product-swiper col-md-12">
@@ -496,6 +501,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                     <svg className="arrow-right position-absolute" width="18" height="20" viewBox="0 0 32 32" fill="currentColor">
                       <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
                     </svg>
+                    <span className="sr-only">Explore the collection</span>
                   </Link>
                 </div>
               </div>
