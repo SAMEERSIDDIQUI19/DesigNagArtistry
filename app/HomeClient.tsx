@@ -200,6 +200,9 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
 
   return (
     <>
+      {/* H1 - Above Banner for SEO */}
+      <h1 className="sr-only">Designagartistry | Premium Luxury Pret & Modern Ethnic Couture in Pakistan</h1>
+
       {/* Billboard Section */}
       <section id="billboard" className="overflow-hidden">
         <div className="swiper main-swiper">
@@ -216,8 +219,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                           className="banner-fill-img"
                         />
                         <div className="banner-content padding-large">
-                          <h1 className="display-2 text-capitalize pb-2 d-none" style={slide.titleColor ? { color: slide.titleColor } : {}}>Designagartistry | Premium Luxury Pret & Modern Ethnic Couture in Pakistan</h1>
-                          <h2 className="display-3 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
+                          <h2 className="display-2 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
                           <p>{slide.description}</p>
                         </div>
                         <div className="billboard-btn-wrap">
@@ -379,6 +381,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                 <svg className="icon-arrow" width="25" height="25" viewBox="0 0 32 32" fill="currentColor">
                   <path d="m13.281 6.781l-8.5 8.5l-.687.719l.687.719l8.5 8.5l1.438-1.438L7.938 17H28v-2H7.937l6.782-6.781z" />
                 </svg>
+                <span className="sr-only">Previous testimonial</span>
               </div>
               <div className="swiper testimonial-swiper">
                 <div className="quotation text-center">
@@ -406,6 +409,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                 <svg className="icon-arrow" width="25" height="25" viewBox="0 0 32 32" fill="currentColor">
                   <path d="M18.719 6.781L17.28 8.22L24.063 15H4v2h20.063l-6.782 6.781l1.438 1.438l8.5-8.5l.687-.719l-.687-.719z" />
                 </svg>
+                <span className="sr-only">Next testimonial</span>
               </div>
             </div>
           </div>
