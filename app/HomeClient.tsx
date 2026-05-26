@@ -353,7 +353,10 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                             <Link href={`/product/${product.slug}`} className="text-primary">{product.name}</Link>
                           </h3>
                           <div className="cart-info">
-                            <a className="pseudo-text-effect" href="#" data-after="ADD TO CART"><span>{product.price}</span></a>
+                            <a className="pseudo-text-effect" href="#" data-after="ADD TO CART">
+                              <span>{product.price}</span>
+                              <span className="sr-only">Add to cart</span>
+                            </a>
                           </div>
                         </div>
                       </div>
@@ -439,7 +442,10 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                             <Link href={`/product/${product.slug}`} className="text-primary">{product.name}</Link>
                           </h3>
                           <div className="cart-info">
-                            <a className="pseudo-text-effect" href="#" data-after="ADD TO CART"><span>{product.price}</span></a>
+                            <a className="pseudo-text-effect" href="#" data-after="ADD TO CART">
+                              <span>{product.price}</span>
+                              <span className="sr-only">Add to cart</span>
+                            </a>
                           </div>
                         </div>
                       </div>

@@ -43,6 +43,7 @@ export const metadata: Metadata = {
     template: "%s | Designagartistry",
   },
   description: "Pakistan's premier luxury pret & couture house. Explore Designagartistry's handcrafted modern ethnic couture — runway-inspired silhouettes & timeless artistry.",
+  // Ignored by Google but add for completeness.
   keywords: [
     "premium luxury fashion brand Pakistan",
     "luxury pret wear Pakistan",
