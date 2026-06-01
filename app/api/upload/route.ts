@@ -7,13 +7,22 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File;
     const productId = formData.get("productId") as string | null;
 
+    console.log("Upload request received:", { 
+      fileName: file?.name, 
+      fileSize: file?.size, 
+      fileType: file?.type, 
+      productId 
+    });
+
     if (!file) {
+      console.error("No file provided in request");
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate file type (skip if browser didn't report a type)
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif", "image/avif", "image/heic", "image/heif"];
     if (file.type && !allowedTypes.includes(file.type)) {
+      console.error("Invalid file type:", file.type);
       return NextResponse.json(
         { error: `Invalid file type (${file.type}). Only JPEG, PNG, WebP, GIF, and AVIF are allowed.` },
         { status: 400 }
@@ -23,15 +32,18 @@ export async function POST(request: NextRequest) {
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
+      console.error("File size exceeds limit:", file.size);
       return NextResponse.json(
         { error: `File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds 10MB limit` },
         { status: 400 }
       );
     }
 
+    console.log("File validation passed, attempting to save...");
     // Dynamically import upload utilities only at runtime
     const { saveUploadedFile } = await import("@/lib/upload-utils");
     const url = await saveUploadedFile(file, productId);
+    console.log("File saved successfully:", url);
     return NextResponse.json({ url });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);

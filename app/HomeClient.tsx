@@ -203,6 +203,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
       {/* H1 - Above Banner for SEO */}
       <h1 className="sr-only">Designagartistry | Premium Luxury Pret & Modern Ethnic Couture in Pakistan</h1>
 
+      <main>
       {/* Billboard Section */}
       <section id="billboard" className="overflow-hidden">
         <div className="swiper main-swiper">
@@ -217,6 +218,8 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                           src={slide.image}
                           alt={`Designagartistry luxury pret wear Pakistan — ${slide.title}`}
                           className="banner-fill-img"
+                          width={1920}
+                          height={1080}
                         />
                         <div className="banner-content padding-large">
                           <h2 className="display-2 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
@@ -249,7 +252,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
             {content.banner.items.map((item, index) => (
               <div key={index} className="col-md-4 banner-content-1 position-relative">
                 <div>
-                  <img src={item.image} className="img-fluid" alt={`Designagartistry ${item.title} — premium women's fashion Pakistan`} />
+                  <img src={item.image} className="img-fluid" alt={`Designagartistry ${item.title} — premium women's fashion Pakistan`} width={600} height={800} />
                 </div>
                 <div className="banner-content-text position-absolute">
                   <h2 className="display-5" style={item.titleColor ? { color: item.titleColor } : {}}>{item.title}</h2>
@@ -352,7 +355,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                         <div className="gold-frame-wrapper">
                           <div className="gold-frame gold-frame-1"></div>
                           <div className="gold-frame gold-frame-2"></div>
-                          <img src={product.image} alt={`Designagartistry ${product.name} — designer ethnic wear Pakistan`} className="product-image img-fluid" />
+                          <img src={product.image} alt={`Designagartistry ${product.name} — designer ethnic wear Pakistan`} className="product-image img-fluid" width={400} height={500} />
                         </div>
                         <div className="cart-concern">
                           <h3 className="card-title text-capitalize pt-3 text-primary">
@@ -509,6 +512,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
           </div>
         </section>
       )}
+      </main>
     </>
   );
 }

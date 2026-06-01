@@ -54,6 +54,28 @@ export default function EditProductPage() {
     });
   };
 
+  const handleMoveThumbnailUp = (index: number) => {
+    const thumbnails = parseThumbnails(formData.thumbnail);
+    if (index === 0) return; // Can't move first item up
+    const newThumbnails = [...thumbnails];
+    [newThumbnails[index - 1], newThumbnails[index]] = [newThumbnails[index], newThumbnails[index - 1]];
+    setFormData({
+      ...formData,
+      thumbnail: joinThumbnails(newThumbnails),
+    });
+  };
+
+  const handleMoveThumbnailDown = (index: number) => {
+    const thumbnails = parseThumbnails(formData.thumbnail);
+    if (index === thumbnails.length - 1) return; // Can't move last item down
+    const newThumbnails = [...thumbnails];
+    [newThumbnails[index], newThumbnails[index + 1]] = [newThumbnails[index + 1], newThumbnails[index]];
+    setFormData({
+      ...formData,
+      thumbnail: joinThumbnails(newThumbnails),
+    });
+  };
+
   useEffect(() => {
     fetchProduct();
     fetchCategories();
@@ -179,15 +201,18 @@ export default function EditProductPage() {
         try {
           const thumbnailUrls = [];
           for (const file of formData.thumbnailFiles) {
+            console.log("Uploading thumbnail:", file.name, file.size, file.type);
             const imageUrl = await handleFileUploadWithProductId(file, productId);
+            console.log("Thumbnail uploaded successfully:", imageUrl);
             thumbnailUrls.push(imageUrl);
           }
 
-          // Replace existing thumbnails with the newly uploaded ones
-          const allThumbnails = thumbnailUrls;
+          // Append new thumbnails to existing ones
+          const existingThumbnails = parseThumbnails(formData.thumbnail);
+          const allThumbnails = [...existingThumbnails, ...thumbnailUrls];
 
           // Update only the thumbnail field via existing PUT endpoint
-          await fetch(`/api/admin/products/${productId}`, {
+          const updateResponse = await fetch(`/api/admin/products/${productId}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -195,9 +220,15 @@ export default function EditProductPage() {
             },
             body: JSON.stringify({ thumbnail: joinThumbnails(allThumbnails) }),
           });
+
+          if (!updateResponse.ok) {
+            const updateError = await updateResponse.json();
+            console.error("Failed to update product with thumbnail:", updateError);
+            throw new Error(updateError.error || "Failed to update product with thumbnail");
+          }
         } catch (uploadError) {
           console.error("Thumbnail upload failed:", uploadError);
-          alert("Product saved but thumbnail upload failed. Please try uploading the image again.");
+          alert(`Product saved but thumbnail upload failed. Error: ${uploadError instanceof Error ? uploadError.message : String(uploadError)}`);
         }
       }
 
@@ -587,23 +618,51 @@ export default function EditProductPage() {
               )}
               {formData.thumbnail && (
                 <div className="mt-2">
-                  <p className="text-sm text-gray-600">Existing thumbnails:</p>
+                  <p className="text-sm text-gray-600">Existing thumbnails (first image is primary):</p>
                   <div className="grid grid-cols-4 gap-2 mt-2">
                     {parseThumbnails(formData.thumbnail).map((thumb, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={thumb}
-                          alt={`Thumbnail ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteThumbnail(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs"
-                        >
-                          ×
-                        </button>
-                        <p className="text-xs text-gray-500 mt-1 truncate">{thumb}</p>
+                      <div key={index} className="relative group">
+                        <div className="relative">
+                          {index === 0 && (
+                            <div className="absolute top-0 left-0 bg-blue-600 text-white text-xs px-2 py-1 rounded-tl-lg rounded-br-lg z-10">
+                              Primary
+                            </div>
+                          )}
+                          <img
+                            src={thumb}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-lg border"
+                          />
+                          <div className="absolute top-1 right-1 flex flex-col gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveThumbnailUp(index)}
+                              disabled={index === 0}
+                              className="bg-gray-800 text-white rounded w-6 h-6 flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                              title="Move up"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveThumbnailDown(index)}
+                              disabled={index === parseThumbnails(formData.thumbnail).length - 1}
+                              className="bg-gray-800 text-white rounded w-6 h-6 flex items-center justify-center hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                              title="Move down"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteThumbnail(index)}
+                              className="bg-red-500 text-white rounded w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs"
+                              title="Delete"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 truncate">Image {index + 1}</p>
                       </div>
                     ))}
                   </div>
