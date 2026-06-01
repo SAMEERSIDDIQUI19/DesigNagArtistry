@@ -369,6 +369,12 @@ export default function ProductDetailClient() {
                 <div className="flex flex-wrap gap-2">
                   {product.variants
                     .filter(v => v.variantName === "size")
+                    .sort((a, b) => {
+                      const sizeOrder = ["S", "M", "L", "XL", "XXL"];
+                      const aIndex = sizeOrder.indexOf(a.variantValue);
+                      const bIndex = sizeOrder.indexOf(b.variantValue);
+                      return aIndex - bIndex;
+                    })
                     .map((variant) => (
                       <button
                         key={variant.id}
