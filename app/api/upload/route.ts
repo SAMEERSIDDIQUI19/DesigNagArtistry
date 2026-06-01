@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { v2 as cloudinary } from 'cloudinary';
 
+// Configure Cloudinary - support both CLOUDINARY_URL and individual vars
+if (process.env.CLOUDINARY_URL) {
+  cloudinary.config(process.env.CLOUDINARY_URL);
+} else {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true,
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,12 +51,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("File validation passed, attempting to save...");
-    // Dynamically import upload utilities only at runtime
-    const { saveUploadedFile } = await import("@/lib/upload-utils");
-    const url = await saveUploadedFile(file, productId);
-    console.log("File saved successfully:", url);
-    return NextResponse.json({ url });
+    console.log("File validation passed, attempting to upload to Cloudinary...");
+
+    // Convert File to Buffer for Cloudinary upload
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Upload to Cloudinary
+    const uploadResult = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: productId ? `products/${productId}` : 'products',
+          resource_type: 'auto',
+          quality: 'auto:good',
+          fetch_format: 'auto',
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(buffer);
+    });
+
+    console.log("File uploaded successfully to Cloudinary:", uploadResult.secure_url);
+    return NextResponse.json({ url: uploadResult.secure_url });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("Upload error:", msg, error);
