@@ -56,6 +56,7 @@ export default function ProductDetailClient() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [sizeChartUrl, setSizeChartUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || !imageRef.current) return;
@@ -220,7 +221,7 @@ export default function ProductDetailClient() {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              {selectedImage ? (
+              {selectedImage && !imageError ? (
                 <>
                   <Image
                     ref={imageRef}
@@ -231,6 +232,7 @@ export default function ProductDetailClient() {
                     className="w-full object-contain cursor-pointer"
                     onClick={() => handleImageClick(allImages.indexOf(selectedImage))}
                     priority
+                    onError={() => setImageError(true)}
                   />
                   {showMagnifier && (
                     <div
@@ -247,8 +249,13 @@ export default function ProductDetailClient() {
                   )}
                 </>
               ) : (
-                <div className="w-full h-96 flex items-center justify-center text-gray-400">
-                  No Image
+                <div className="w-full h-96 flex flex-col items-center justify-center text-gray-400 bg-gray-100">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  <p className="mt-2 text-sm">No Image Available</p>
                 </div>
               )}
             </div>

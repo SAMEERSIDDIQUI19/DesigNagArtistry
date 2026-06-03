@@ -43,6 +43,7 @@ export default function ShopPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   // Generate or get session ID for guest users
   const getSessionId = () => {
@@ -143,10 +144,10 @@ export default function ShopPage() {
     console.log("Getting image for product:", product.name);
     console.log("Thumbnail:", product.thumbnail);
     console.log("Images:", product.images);
-    
+
     // If thumbnail exists, use it
     if (product.thumbnail) {
-      const imageUrl = getPrimaryThumbnail(product.thumbnail) || '/images/placeholder.jpg';
+      const imageUrl = getPrimaryThumbnail(product.thumbnail) || '';
       console.log("Using thumbnail:", imageUrl);
       return imageUrl;
     }
@@ -156,9 +157,13 @@ export default function ShopPage() {
       console.log("Using first image from array:", imageUrl);
       return imageUrl;
     }
-    // Fallback to placeholder
-    console.log("No images found, using placeholder");
-    return '/images/placeholder.jpg';
+    // Return empty string if no image exists
+    console.log("No images found");
+    return '';
+  };
+
+  const hasImage = (product: Product): boolean => {
+    return !!(product.thumbnail || (product.images && product.images.length > 0));
   };
 
   const renderCategoryTree = (category: CategoryNode, level: number = 0) => {
@@ -320,14 +325,28 @@ export default function ShopPage() {
                     <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
                       <Link href={`/product/${product.slug}`}>
                         <div className="relative aspect-square sm:h-52 bg-gray-100">
-                          <Image
-                            src={getProductImage(product)}
-                            alt={product.name}
-                            width={400}
-                            height={400}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
+                          {hasImage(product) && !imageErrors.has(product.id) ? (
+                            <Image
+                              src={getProductImage(product)}
+                              alt={product.name}
+                              width={400}
+                              height={400}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                              onError={() => {
+                                setImageErrors(prev => new Set(prev).add(product.id));
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                              </svg>
+                              <p className="mt-1 text-xs">No Image</p>
+                            </div>
+                          )}
                           {product.isOnSale && (
                             <span className="absolute top-1.5 left-1.5 bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-semibold">
                               SALE
