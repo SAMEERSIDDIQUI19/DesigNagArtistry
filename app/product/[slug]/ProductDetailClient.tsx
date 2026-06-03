@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import React from "react";
 
 interface Product {
@@ -221,12 +222,15 @@ export default function ProductDetailClient() {
             >
               {selectedImage ? (
                 <>
-                  <img
+                  <Image
                     ref={imageRef}
                     src={selectedImage}
                     alt={product.name}
+                    width={600}
+                    height={600}
                     className="w-full object-contain cursor-pointer"
                     onClick={() => handleImageClick(allImages.indexOf(selectedImage))}
+                    priority
                   />
                   {showMagnifier && (
                     <div
@@ -263,10 +267,13 @@ export default function ProductDetailClient() {
                         : "border-transparent"
                     }`}
                   >
-                    <img
+                    <Image
                       src={imageUrl}
                       alt={`Product image ${index + 1}`}
+                      width={100}
+                      height={100}
                       className="w-full h-20 object-cover"
+                      loading="lazy"
                     />
                   </div>
                 ))}
@@ -334,10 +341,13 @@ export default function ProductDetailClient() {
                 </button>
                 {sizeChartOpen && (
                   <div className="mt-1 border border-gray-200 rounded-b-lg overflow-hidden bg-white p-3">
-                    <img
+                    <Image
                       src={sizeChartUrl}
                       alt={`Size chart for ${product.name}`}
+                      width={800}
+                      height={600}
                       className="w-full h-auto object-contain"
+                      loading="lazy"
                     />
                   </div>
                 )}

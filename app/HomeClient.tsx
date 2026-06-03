@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Swiper from 'swiper';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
@@ -214,12 +215,14 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                   <div className="row">
                     <div className="col-md-12">
                       <div className="banner-item banner-item-responsive position-relative overflow-hidden">
-                        <img
+                        <Image
                           src={slide.image}
                           alt={`Designagartistry luxury pret wear Pakistan — ${slide.title}`}
                           className="banner-fill-img"
                           width={1920}
                           height={1080}
+                          priority={index === 0}
+                          loading={index === 0 ? "eager" : "lazy"}
                         />
                         <div className="banner-content padding-large">
                           <h2 className="display-2 text-capitalize pb-2" style={slide.titleColor ? { color: slide.titleColor } : {}}>{slide.title}</h2>
@@ -252,7 +255,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
             {content.banner.items.map((item, index) => (
               <div key={index} className="col-md-4 banner-content-1 position-relative">
                 <div>
-                  <img src={item.image} className="img-fluid" alt={`Designagartistry ${item.title} — premium women's fashion Pakistan`} width={600} height={800} />
+                  <Image src={item.image} className="img-fluid" alt={`Designagartistry ${item.title} — premium women's fashion Pakistan`} width={600} height={800} loading="lazy" />
                 </div>
                 <div className="banner-content-text position-absolute">
                   <h2 className="display-5" style={item.titleColor ? { color: item.titleColor } : {}}>{item.title}</h2>
@@ -355,7 +358,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                         <div className="gold-frame-wrapper">
                           <div className="gold-frame gold-frame-1"></div>
                           <div className="gold-frame gold-frame-2"></div>
-                          <img src={product.image} alt={`Designagartistry ${product.name} — designer ethnic wear Pakistan`} className="product-image img-fluid" width={400} height={500} />
+                          <Image src={product.image} alt={`Designagartistry ${product.name} — designer ethnic wear Pakistan`} className="product-image img-fluid" width={400} height={500} loading="lazy" />
                         </div>
                         <div className="cart-concern">
                           <h3 className="card-title text-capitalize pt-3 text-primary">
@@ -447,7 +450,7 @@ export default function HomeClient({ initialContent }: { initialContent: HomeCon
                         <div className="gold-frame-wrapper">
                           <div className="gold-frame gold-frame-1"></div>
                           <div className="gold-frame gold-frame-2"></div>
-                          <img src={product.image} alt={`Designagartistry ${product.name} — modern ethnic couture Pakistan`} className="product-image img-fluid" />
+                          <Image src={product.image} alt={`Designagartistry ${product.name} — modern ethnic couture Pakistan`} className="product-image img-fluid" width={400} height={500} loading="lazy" />
                         </div>
                         <div className="cart-concern">
                           <h3 className="card-title text-capitalize pt-3 text-primary">

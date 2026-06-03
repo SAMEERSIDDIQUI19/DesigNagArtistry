@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { getPrimaryThumbnail } from "@/lib/thumbnail-utils";
 
 interface Product {
@@ -319,10 +320,13 @@ export default function ShopPage() {
                     <div key={product.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
                       <Link href={`/product/${product.slug}`}>
                         <div className="relative aspect-square sm:h-52 bg-gray-100">
-                          <img
+                          <Image
                             src={getProductImage(product)}
                             alt={product.name}
+                            width={400}
+                            height={400}
                             className="w-full h-full object-cover"
+                            loading="lazy"
                           />
                           {product.isOnSale && (
                             <span className="absolute top-1.5 left-1.5 bg-red-600 text-white px-1.5 py-0.5 rounded text-xs font-semibold">
