@@ -77,6 +77,19 @@ function hasAdminToken(request: NextRequest): boolean {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // 0. Canonical URL redirects (HTTP→HTTPS, non-www→www)
+  const hostname = request.headers.get('host') || '';
+  const protocol = request.headers.get('x-forwarded-proto') || 'http';
+  const canonicalDomain = 'www.designagartistry.com';
+  const isHttp = protocol === 'http';
+  const isNonWww = hostname === 'designagartistry.com';
+  const isNotCanonical = hostname !== canonicalDomain;
+
+  if (isHttp || isNotCanonical) {
+    const canonicalUrl = `https://${canonicalDomain}${pathname}${request.nextUrl.search}`;
+    return NextResponse.redirect(canonicalUrl, 301);
+  }
+
   // 1. Block suspicious requests
   if (isSuspicious(request)) {
     return new NextResponse('Bad Request', { status: 400 });
@@ -139,10 +152,13 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/api/:path*',
-    '/.env',
-    '/.git/:path*',
-    '/prisma/:path*',
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 };
