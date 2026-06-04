@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 
+const metadataBase = new URL('https://www.designagartistry.com');
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -38,6 +40,7 @@ const jsonLd = {
 };
 
 export const metadata: Metadata = {
+  metadataBase,
   title: {
     default: "Designagartistry | Premium Luxury Fashion Pakistan",
     template: "%s | Designagartistry",
@@ -102,9 +105,6 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
-  },
-  alternates: {
-    canonical: "https://www.designagartistry.com",
   },
 };
 
