@@ -109,6 +109,8 @@ model Product {
   orderItems      OrderItem[]
   reviews         Review[]
   wishlists       Wishlist[]
+  productFabrics  ProductFabric[]
+  productColors   ProductColor[]
 
   @@map("products")
 }
@@ -186,6 +188,8 @@ model CartItem {
   cartId    String          @map("cart_id")
   productId String          @map("product_id")
   variantId String?         @map("variant_id")
+  fabricId  String?         @map("fabric_id")
+  colorId   String?         @map("color_id")
   quantity  Int             @default(1)
   price     Decimal         @db.Decimal(10, 2)
   createdAt DateTime        @default(now()) @map("created_at")
@@ -236,6 +240,9 @@ model OrderItem {
   quantity    Int
   price       Decimal         @db.Decimal(10, 2)
   total       Decimal         @db.Decimal(10, 2)
+  fabricName  String?         @map("fabric_name") @db.VarChar(255)
+  colorName   String?         @map("color_name") @db.VarChar(255)
+  colorHex    String?         @map("color_hex") @db.VarChar(7)
 
   order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product     Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
@@ -308,4 +315,72 @@ model CouponCode {
   createdAt      DateTime  @default(now()) @map("created_at")
 
   @@map("coupon_codes")
+}
+
+// =========================
+// SITE CONTENT TABLE
+// =========================
+model SiteContent {
+  key       String   @id @db.VarChar(255)
+  content   String   @db.Text
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("site_content")
+}
+
+// =========================
+// FABRICS TABLE
+// =========================
+model Fabric {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  productFabrics ProductFabric[]
+
+  @@map("fabrics")
+}
+
+// =========================
+// COLORS TABLE
+// =========================
+model Color {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(255)
+  hexCode   String   @map("hex_code") @db.VarChar(7)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  productColors ProductColor[]
+
+  @@map("colors")
+}
+
+// =========================
+// PRODUCT FABRICS TABLE
+// =========================
+model ProductFabric {
+  id        String  @id @default(uuid())
+  productId String  @map("product_id")
+  fabricId  String  @map("fabric_id")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fabric  Fabric  @relation(fields: [fabricId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, fabricId])
+  @@map("product_fabrics")
+}
+
+// =========================
+// PRODUCT COLORS TABLE
+// =========================
+model ProductColor {
+  id        String  @id @default(uuid())
+  productId String  @map("product_id")
+  colorId   String  @map("color_id")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, colorId])
+  @@map("product_colors")
 }

@@ -35,6 +35,9 @@ interface OrderDetail extends Order {
     price: number;
     total: number;
     variant: { variantName: string; variantValue: string } | null;
+    fabricName: string | null;
+    colorName: string | null;
+    colorHex: string | null;
     product: { thumbnail: string | null; slug: string } | null;
   }[];
   payments: { provider: string | null; status: string }[];
@@ -441,11 +444,27 @@ export default function OrdersPage() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm text-gray-900 truncate">{item.productName}</p>
-                          {item.variant && (
-                            <span className="inline-flex items-center px-2 py-0.5 mt-0.5 rounded bg-stone-100 text-stone-700 text-xs font-semibold border border-stone-200">
-                              {item.variant.variantName.charAt(0).toUpperCase() + item.variant.variantName.slice(1)}: {item.variant.variantValue}
-                            </span>
-                          )}
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {item.variant && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-stone-100 text-stone-700 text-xs font-semibold border border-stone-200">
+                                {item.variant.variantName.charAt(0).toUpperCase() + item.variant.variantName.slice(1)}: {item.variant.variantValue}
+                              </span>
+                            )}
+                            {item.fabricName && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold border border-blue-200">
+                                Fabric: {item.fabricName}
+                              </span>
+                            )}
+                            {item.colorName && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200">
+                                <div
+                                  className="w-3 h-3 rounded-full mr-1 border border-gray-300"
+                                  style={{ backgroundColor: item.colorHex || undefined }}
+                                />
+                                Color: {item.colorName}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity} × Rs. {Number(item.price).toFixed(2)}</p>
                         </div>
                         <p className="font-semibold text-sm text-gray-900 flex-shrink-0">Rs. {Number(item.total).toFixed(2)}</p>

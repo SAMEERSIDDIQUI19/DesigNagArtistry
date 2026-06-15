@@ -205,6 +205,30 @@ export async function POST(request: NextRequest) {
       const salePrice = item.product.salePrice ? (typeof item.product.salePrice === 'string' ? parseFloat(item.product.salePrice) : item.product.salePrice) : null;
       const finalPrice = item.product.isOnSale && salePrice ? salePrice : price;
 
+      // Fetch fabric and color details if selected
+      let fabricName = null;
+      let colorName = null;
+      let colorHex = null;
+
+      if (item.fabricId) {
+        const fabric = await prisma.fabric.findUnique({
+          where: { id: item.fabricId },
+          select: { name: true },
+        });
+        if (fabric) fabricName = fabric.name;
+      }
+
+      if (item.colorId) {
+        const color = await prisma.color.findUnique({
+          where: { id: item.colorId },
+          select: { name: true, hexCode: true },
+        });
+        if (color) {
+          colorName = color.name;
+          colorHex = color.hexCode;
+        }
+      }
+
       await prisma.orderItem.create({
         data: {
           orderId: order.id,
@@ -214,6 +238,9 @@ export async function POST(request: NextRequest) {
           price: finalPrice,
           total: finalPrice * item.quantity,
           variantId: item.variantId || null,
+          fabricName,
+          colorName,
+          colorHex,
         },
       });
     }

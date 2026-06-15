@@ -29,6 +29,16 @@ export async function GET(
         images: true,
         variants: true,
         inventory: true,
+        productFabrics: {
+          include: {
+            fabric: true,
+          },
+        },
+        productColors: {
+          include: {
+            color: true,
+          },
+        },
       },
     });
 

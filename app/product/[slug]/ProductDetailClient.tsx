@@ -37,6 +37,19 @@ interface Product {
     price: number | null;
     stock: number;
   }[];
+  productFabrics: {
+    fabric: {
+      id: string;
+      name: string;
+    };
+  }[];
+  productColors: {
+    color: {
+      id: string;
+      name: string;
+      hexCode: string;
+    };
+  }[];
 }
 
 export default function ProductDetailClient() {
@@ -46,6 +59,8 @@ export default function ProductDetailClient() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
+  const [selectedFabric, setSelectedFabric] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [allImages, setAllImages] = useState<string[]>([]);
   const [magnifierPosition, setMagnifierPosition] = useState({ x: 0, y: 0, bgPosX: 0, bgPosY: 0 });
@@ -158,6 +173,8 @@ export default function ProductDetailClient() {
           productId: product?.id,
           quantity,
           variantId: selectedVariant,
+          fabricId: selectedFabric,
+          colorId: selectedColor,
         }),
       });
 
@@ -413,6 +430,54 @@ export default function ProductDetailClient() {
               </div>
             )}
 
+            {/* Select Fabric */}
+            {product.productFabrics && product.productFabrics.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-2">Select Fabric</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.productFabrics.map((pf) => (
+                    <button
+                      key={pf.fabric.id}
+                      onClick={() => setSelectedFabric(pf.fabric.id)}
+                      className={`px-4 py-2 border rounded-lg font-medium text-sm transition-colors ${
+                        selectedFabric === pf.fabric.id
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300 hover:border-black text-gray-900"
+                      }`}
+                    >
+                      {pf.fabric.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Select Color */}
+            {product.productColors && product.productColors.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-2">Select Color</h3>
+                <div className="flex flex-wrap gap-2">
+                  {product.productColors.map((pc) => (
+                    <button
+                      key={pc.color.id}
+                      onClick={() => setSelectedColor(pc.color.id)}
+                      className={`px-4 py-2 border rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+                        selectedColor === pc.color.id
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300 hover:border-black text-gray-900"
+                      }`}
+                    >
+                      <div
+                        className="w-5 h-5 rounded border border-gray-300"
+                        style={{ backgroundColor: pc.color.hexCode }}
+                      />
+                      {pc.color.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Quantity */}
             <div className="mb-6">
               <h3 className="font-semibold text-gray-900 mb-2">Quantity</h3>
@@ -455,6 +520,8 @@ export default function ProductDetailClient() {
               disabled={
                 product.status !== "active" ||
                 (product.variants.filter(v => v.variantName === "size").length > 0 && !selectedVariant) ||
+                (product.productFabrics && product.productFabrics.length > 0 && !selectedFabric) ||
+                (product.productColors && product.productColors.length > 0 && !selectedColor) ||
                 (selectedVariant
                   ? (product.variants.find(v => v.id === selectedVariant)?.stock ?? 0) === 0
                   : product.stock === 0)
@@ -463,6 +530,10 @@ export default function ProductDetailClient() {
             >
               {product.variants.filter(v => v.variantName === "size").length > 0 && !selectedVariant
                 ? "Select a Size"
+                : product.productFabrics && product.productFabrics.length > 0 && !selectedFabric
+                ? "Select a Fabric"
+                : product.productColors && product.productColors.length > 0 && !selectedColor
+                ? "Select a Color"
                 : selectedVariant
                 ? ((product.variants.find(v => v.id === selectedVariant)?.stock ?? 0) === 0 ? "Out of Stock" : "Add to Cart")
                 : product.stock === 0 ? "Out of Stock" : "Add to Cart"}

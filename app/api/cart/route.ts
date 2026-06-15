@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { productId, quantity, variantId } = body;
+    const { productId, quantity, variantId, fabricId, colorId } = body;
 
     console.log("Add to cart - userId:", userId, "sessionId:", sessionId, "productId:", productId);
 
@@ -179,6 +179,8 @@ export async function POST(request: NextRequest) {
         cartId: cart.id,
         productId,
         variantId: variantId || null,
+        fabricId: fabricId || null,
+        colorId: colorId || null,
       },
     });
 
@@ -208,6 +210,8 @@ export async function POST(request: NextRequest) {
           productId,
           quantity,
           variantId: variantId || null,
+          fabricId: fabricId || null,
+          colorId: colorId || null,
           price: itemPrice,
         },
       });

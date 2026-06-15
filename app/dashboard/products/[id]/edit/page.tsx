@@ -11,6 +11,17 @@ interface Category {
   name: string;
 }
 
+interface Fabric {
+  id: string;
+  name: string;
+}
+
+interface Color {
+  id: string;
+  name: string;
+  hexCode: string;
+}
+
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
@@ -22,6 +33,12 @@ export default function EditProductPage() {
   const [uploadingSizeChart, setUploadingSizeChart] = useState(false);
   const [sizes, setSizes] = useState<{ size: string; stock: string }[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [fabrics, setFabrics] = useState<Fabric[]>([]);
+  const [colors, setColors] = useState<Color[]>([]);
+  const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [newFabrics, setNewFabrics] = useState<string[]>([]);
+  const [newColors, setNewColors] = useState<{ name: string; hexCode: string }[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -79,6 +96,8 @@ export default function EditProductPage() {
   useEffect(() => {
     fetchProduct();
     fetchCategories();
+    fetchFabrics();
+    fetchColors();
   }, [params.id]);
 
   const fetchCategories = async () => {
@@ -98,6 +117,46 @@ export default function EditProductPage() {
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchFabrics = async () => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch("/api/admin/fabrics", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFabrics(data);
+      } else {
+        console.error("Failed to fetch fabrics:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching fabrics:", error);
+    }
+  };
+
+  const fetchColors = async () => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch("/api/admin/colors", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setColors(data);
+      } else {
+        console.error("Failed to fetch colors:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching colors:", error);
     }
   };
 
@@ -139,6 +198,18 @@ export default function EditProductPage() {
           (product.variants as any[])
             .filter((v: any) => v.variantName === "size")
             .map((v: any) => ({ size: v.variantValue, stock: String(v.stock) }))
+        );
+        setSelectedFabrics(
+          (product.productFabrics as any[])?.map((pf: any) => pf.fabricId) || []
+        );
+        setSelectedColors(
+          (product.productColors as any[])?.map((pc: any) => pc.colorId) || []
+        );
+        setNewFabrics(
+          (product.productFabrics as any[])?.map((pf: any) => pf.fabric?.name) || []
+        );
+        setNewColors(
+          (product.productColors as any[])?.map((pc: any) => ({ name: pc.color?.name, hexCode: pc.color?.hexCode })) || []
         );
       }
     } catch (error) {
@@ -281,6 +352,64 @@ export default function EditProductPage() {
             .map(s => ({ size: s.size.trim(), stock: parseInt(s.stock) || 0 })),
         }),
       });
+
+      // Create new fabrics and associate with product
+      const validFabrics = newFabrics.filter(f => f.trim());
+      const fabricIds: string[] = [];
+      for (const fabricName of validFabrics) {
+        const response = await fetch("/api/admin/fabrics", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ name: fabricName.trim() }),
+        });
+        if (response.ok) {
+          const fabric = await response.json();
+          fabricIds.push(fabric.id);
+        }
+      }
+
+      if (fabricIds.length > 0) {
+        await fetch(`/api/admin/products/${productId}/fabrics`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ fabricIds }),
+        });
+      }
+
+      // Create new colors and associate with product
+      const validColors = newColors.filter(c => c.name.trim());
+      const colorIds: string[] = [];
+      for (const color of validColors) {
+        const response = await fetch("/api/admin/colors", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ name: color.name.trim(), hexCode: color.hexCode }),
+        });
+        if (response.ok) {
+          const colorData = await response.json();
+          colorIds.push(colorData.id);
+        }
+      }
+
+      if (colorIds.length > 0) {
+        await fetch(`/api/admin/products/${productId}/colors`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ colorIds }),
+        });
+      }
 
       router.push("/dashboard/products");
     } catch (error) {
@@ -768,6 +897,109 @@ export default function EditProductPage() {
                     <button
                       type="button"
                       onClick={() => removeSize(index)}
+                      className="px-3 py-2 text-red-500 hover:text-red-700 font-bold"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Fabrics</label>
+              <button
+                type="button"
+                onClick={() => setNewFabrics([...newFabrics, ""])}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                + Add Fabric
+              </button>
+            </div>
+            {newFabrics.length === 0 ? (
+              <p className="text-sm text-gray-400">No fabrics added. Click &quot;+ Add Fabric&quot; to add fabric options.</p>
+            ) : (
+              <div className="space-y-2">
+                {newFabrics.map((fabric, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="e.g. Cotton, Silk, Linen"
+                      value={fabric}
+                      onChange={(e) => {
+                        const updated = [...newFabrics];
+                        updated[index] = e.target.value;
+                        setNewFabrics(updated);
+                      }}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setNewFabrics(newFabrics.filter((_, i) => i !== index))}
+                      className="px-3 py-2 text-red-500 hover:text-red-700 font-bold"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Colors</label>
+              <button
+                type="button"
+                onClick={() => setNewColors([...newColors, { name: "", hexCode: "#000000" }])}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                + Add Color
+              </button>
+            </div>
+            {newColors.length === 0 ? (
+              <p className="text-sm text-gray-400">No colors added. Click &quot;+ Add Color&quot; to add color options.</p>
+            ) : (
+              <div className="space-y-2">
+                {newColors.map((color, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder="Color name"
+                      value={color.name}
+                      onChange={(e) => {
+                        const updated = [...newColors];
+                        updated[index].name = e.target.value;
+                        setNewColors(updated);
+                      }}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="#000000"
+                      value={color.hexCode}
+                      onChange={(e) => {
+                        const updated = [...newColors];
+                        updated[index].hexCode = e.target.value;
+                        setNewColors(updated);
+                      }}
+                      className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                    />
+                    <input
+                      type="color"
+                      value={color.hexCode}
+                      onChange={(e) => {
+                        const updated = [...newColors];
+                        updated[index].hexCode = e.target.value;
+                        setNewColors(updated);
+                      }}
+                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setNewColors(newColors.filter((_, i) => i !== index))}
                       className="px-3 py-2 text-red-500 hover:text-red-700 font-bold"
                     >
                       &times;
