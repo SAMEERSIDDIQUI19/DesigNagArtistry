@@ -351,20 +351,19 @@ export default function EditProductPage() {
       const validFabrics = newFabrics.filter(f => f.trim());
       const validColors = newColors.filter(c => c.name.trim());
 
-      if (validSizes.length > 0 || validFabrics.length > 0 || validColors.length > 0) {
-        await fetch(`/api/admin/products/${productId}/variants`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            sizes: validSizes.map(s => ({ size: s.size.trim(), stock: parseInt(s.stock) || 0 })),
-            fabrics: validFabrics.map(f => ({ fabric: f.trim() })),
-            colors: validColors.map(c => ({ color: c.name.trim(), hexCode: c.hexCode })),
-          }),
-        });
-      }
+      // Always send the request to ensure old variants are deleted when removed
+      await fetch(`/api/admin/products/${productId}/variants`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          sizes: validSizes.map(s => ({ size: s.size.trim(), stock: parseInt(s.stock) || 0 })),
+          fabrics: validFabrics.map(f => ({ fabric: f.trim() })),
+          colors: validColors.map(c => ({ color: c.name.trim(), hexCode: c.hexCode })),
+        }),
+      });
 
       router.push("/dashboard/products");
     } catch (error) {
