@@ -206,10 +206,17 @@ export default function EditProductPage() {
           (product.productColors as any[])?.map((pc: any) => pc.colorId) || []
         );
         setNewFabrics(
-          (product.productFabrics as any[])?.map((pf: any) => pf.fabric?.name) || []
+          (product.variants as any[])
+            ?.filter((v: any) => v.variantName === "fabric")
+            .map((v: any) => v.variantValue) || []
         );
         setNewColors(
-          (product.productColors as any[])?.map((pc: any) => ({ name: pc.color?.name, hexCode: pc.color?.hexCode })) || []
+          (product.variants as any[])
+            ?.filter((v: any) => v.variantName === "color")
+            .map((v: any) => {
+              const [name, hexCode] = v.variantValue.split('|');
+              return { name, hexCode };
+            }) || []
         );
       }
     } catch (error) {
@@ -339,75 +346,23 @@ export default function EditProductPage() {
         }
       }
 
-      // Save size variants
-      await fetch(`/api/admin/products/${productId}/variants`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          sizes: sizes
-            .filter(s => s.size.trim())
-            .map(s => ({ size: s.size.trim(), stock: parseInt(s.stock) || 0 })),
-        }),
-      });
-
-      // Create new fabrics and associate with product
+      // Save all variants (sizes, fabrics, colors) in a single request
+      const validSizes = sizes.filter(s => s.size.trim());
       const validFabrics = newFabrics.filter(f => f.trim());
-      const fabricIds: string[] = [];
-      for (const fabricName of validFabrics) {
-        const response = await fetch("/api/admin/fabrics", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ name: fabricName.trim() }),
-        });
-        if (response.ok) {
-          const fabric = await response.json();
-          fabricIds.push(fabric.id);
-        }
-      }
-
-      if (fabricIds.length > 0) {
-        await fetch(`/api/admin/products/${productId}/fabrics`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ fabricIds }),
-        });
-      }
-
-      // Create new colors and associate with product
       const validColors = newColors.filter(c => c.name.trim());
-      const colorIds: string[] = [];
-      for (const color of validColors) {
-        const response = await fetch("/api/admin/colors", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ name: color.name.trim(), hexCode: color.hexCode }),
-        });
-        if (response.ok) {
-          const colorData = await response.json();
-          colorIds.push(colorData.id);
-        }
-      }
 
-      if (colorIds.length > 0) {
-        await fetch(`/api/admin/products/${productId}/colors`, {
+      if (validSizes.length > 0 || validFabrics.length > 0 || validColors.length > 0) {
+        await fetch(`/api/admin/products/${productId}/variants`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ colorIds }),
+          body: JSON.stringify({
+            sizes: validSizes.map(s => ({ size: s.size.trim(), stock: parseInt(s.stock) || 0 })),
+            fabrics: validFabrics.map(f => ({ fabric: f.trim() })),
+            colors: validColors.map(c => ({ color: c.name.trim(), hexCode: c.hexCode })),
+          }),
         });
       }
 

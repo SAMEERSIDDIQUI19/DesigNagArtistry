@@ -28,16 +28,6 @@ export async function GET(
             id: "asc",
           },
         },
-        productFabrics: {
-          include: {
-            fabric: true,
-          },
-        },
-        productColors: {
-          include: {
-            color: true,
-          },
-        },
       },
     });
 

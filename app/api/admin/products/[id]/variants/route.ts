@@ -47,7 +47,10 @@ export async function PUT(
     const { id } = await context.params;
     const body = await request.json();
     const sizes: { size: string; stock: number }[] = body.sizes ?? [];
+    const fabrics: { fabric: string }[] = body.fabrics ?? [];
+    const colors: { color: string; hexCode: string }[] = body.colors ?? [];
 
+    // Handle sizes
     await prisma.productVariant.deleteMany({
       where: { productId: id, variantName: "size" },
     });
@@ -59,6 +62,40 @@ export async function PUT(
           variantName: "size",
           variantValue: s.size,
           stock: s.stock,
+          price: null,
+        })),
+      });
+    }
+
+    // Handle fabrics
+    await prisma.productVariant.deleteMany({
+      where: { productId: id, variantName: "fabric" },
+    });
+
+    if (fabrics.length > 0) {
+      await prisma.productVariant.createMany({
+        data: fabrics.map((f) => ({
+          productId: id,
+          variantName: "fabric",
+          variantValue: f.fabric,
+          stock: 0,
+          price: null,
+        })),
+      });
+    }
+
+    // Handle colors
+    await prisma.productVariant.deleteMany({
+      where: { productId: id, variantName: "color" },
+    });
+
+    if (colors.length > 0) {
+      await prisma.productVariant.createMany({
+        data: colors.map((c) => ({
+          productId: id,
+          variantName: "color",
+          variantValue: `${c.color}|${c.hexCode}`,
+          stock: 0,
           price: null,
         })),
       });

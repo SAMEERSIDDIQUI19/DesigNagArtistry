@@ -9,6 +9,7 @@ export async function PUT(
   try {
     const body = await request.json();
     const { colorIds } = body;
+    console.log("Updating product colors:", params.id, colorIds);
 
     // Delete existing product colors
     await prisma.productColor.deleteMany({
@@ -28,6 +29,6 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating product colors:', error);
-    return NextResponse.json({ error: 'Failed to update product colors' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update product colors', details: String(error) }, { status: 500 });
   }
 }

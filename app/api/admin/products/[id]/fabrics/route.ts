@@ -9,6 +9,7 @@ export async function PUT(
   try {
     const body = await request.json();
     const { fabricIds } = body;
+    console.log("Updating product fabrics:", params.id, fabricIds);
 
     // Delete existing product fabrics
     await prisma.productFabric.deleteMany({
@@ -28,6 +29,6 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating product fabrics:', error);
-    return NextResponse.json({ error: 'Failed to update product fabrics' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update product fabrics', details: String(error) }, { status: 500 });
   }
 }

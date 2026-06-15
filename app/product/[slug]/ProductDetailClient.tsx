@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -75,6 +75,40 @@ export default function ProductDetailClient() {
   const [sizeChartUrl, setSizeChartUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
 
+  // Calculate button state using useMemo to ensure proper reactivity
+  const buttonState = useMemo(() => {
+    if (!product) return { disabled: true, text: "Loading..." };
+    
+    const hasSize = product.variants.filter(v => v.variantName === "size").length > 0;
+    const hasFabric = product.variants.filter(v => v.variantName === "fabric").length > 0;
+    const hasColor = product.variants.filter(v => v.variantName === "color").length > 0;
+    
+    // All conditions must be met for button to be enabled
+    const sizeRequired = hasSize && !selectedVariant;
+    const fabricRequired = hasFabric && !selectedFabric;
+    const colorRequired = hasColor && !selectedColor;
+    
+    const disabled = 
+      product.status !== "active" ||
+      sizeRequired ||
+      fabricRequired ||
+      colorRequired ||
+      (selectedVariant
+        ? (product.variants.find(v => v.id === selectedVariant)?.stock ?? 0) === 0
+        : product.stock === 0);
+    
+    let text = "Add to Cart";
+    if (sizeRequired) text = "Select a Size";
+    else if (fabricRequired) text = "Select a Fabric";
+    else if (colorRequired) text = "Select a Color";
+    else if (selectedVariant && (product.variants.find(v => v.id === selectedVariant)?.stock ?? 0) === 0) text = "Out of Stock";
+    else if (product.stock === 0) text = "Out of Stock";
+    
+    console.log("Button state calculation:", { hasSize, hasFabric, hasColor, selectedVariant, selectedFabric, selectedColor, sizeRequired, fabricRequired, colorRequired, disabled, text });
+    
+    return { disabled, text };
+  }, [product, selectedVariant, selectedFabric, selectedColor]);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || !imageRef.current) return;
     
@@ -139,6 +173,9 @@ export default function ProductDetailClient() {
       const data = await response.json();
       console.log("Response status:", response.status);
       console.log("Response data:", data);
+      console.log("Product variants:", data.variants);
+      console.log("Fabric variants:", data.variants?.filter(v => v.variantName === "fabric"));
+      console.log("Color variants:", data.variants?.filter(v => v.variantName === "color"));
 
       if (response.ok) {
         setProduct(data);
@@ -433,49 +470,56 @@ export default function ProductDetailClient() {
             )}
 
             {/* Select Fabric */}
-            {product.productFabrics && product.productFabrics.length > 0 && (
+            {product.variants.filter(v => v.variantName === "fabric").length > 0 && (
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Select Fabric</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.productFabrics.map((pf) => (
-                    <button
-                      key={pf.fabric.id}
-                      onClick={() => setSelectedFabric(pf.fabric.id)}
-                      className={`px-4 py-2 border rounded-lg font-medium text-sm transition-colors ${
-                        selectedFabric === pf.fabric.id
-                          ? "border-black bg-black text-white"
-                          : "border-gray-300 hover:border-black text-gray-900"
-                      }`}
-                    >
-                      {pf.fabric.name}
-                    </button>
-                  ))}
+                  {product.variants
+                    .filter(v => v.variantName === "fabric")
+                    .map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => { setSelectedFabric(variant.id); setQuantity(1); }}
+                        className={`px-4 py-2 border rounded-lg font-medium text-sm transition-colors ${
+                          selectedFabric === variant.id
+                            ? "border-black bg-black text-white"
+                            : "border-gray-300 hover:border-black text-gray-900"
+                        }`}
+                      >
+                        {variant.variantValue}
+                      </button>
+                    ))}
                 </div>
               </div>
             )}
 
             {/* Select Color */}
-            {product.productColors && product.productColors.length > 0 && (
+            {product.variants.filter(v => v.variantName === "color").length > 0 && (
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Select Color</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.productColors.map((pc) => (
-                    <button
-                      key={pc.color.id}
-                      onClick={() => setSelectedColor(pc.color.id)}
-                      className={`px-4 py-2 border rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
-                        selectedColor === pc.color.id
-                          ? "border-black bg-black text-white"
-                          : "border-gray-300 hover:border-black text-gray-900"
-                      }`}
-                    >
-                      <div
-                        className="w-5 h-5 rounded border border-gray-300"
-                        style={{ backgroundColor: pc.color.hexCode }}
-                      />
-                      {pc.color.name}
-                    </button>
-                  ))}
+                  {product.variants
+                    .filter(v => v.variantName === "color")
+                    .map((variant) => {
+                      const [colorName, hexCode] = variant.variantValue.split('|');
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => { setSelectedColor(variant.id); setQuantity(1); }}
+                          className={`px-4 py-2 border rounded-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+                            selectedColor === variant.id
+                              ? "border-black bg-black text-white"
+                              : "border-gray-300 hover:border-black text-gray-900"
+                          }`}
+                        >
+                          <div
+                            className="w-5 h-5 rounded border border-gray-300"
+                            style={{ backgroundColor: hexCode }}
+                          />
+                          {colorName}
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -519,26 +563,10 @@ export default function ProductDetailClient() {
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              disabled={
-                product.status !== "active" ||
-                (product.variants.filter(v => v.variantName === "size").length > 0 && !selectedVariant) ||
-                (product.productFabrics && product.productFabrics.length > 0 && !selectedFabric) ||
-                (product.productColors && product.productColors.length > 0 && !selectedColor) ||
-                (selectedVariant
-                  ? (product.variants.find(v => v.id === selectedVariant)?.stock ?? 0) === 0
-                  : product.stock === 0)
-              }
+              disabled={buttonState.disabled}
               className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-lg font-semibold"
             >
-              {product.variants.filter(v => v.variantName === "size").length > 0 && !selectedVariant
-                ? "Select a Size"
-                : product.productFabrics && product.productFabrics.length > 0 && !selectedFabric
-                ? "Select a Fabric"
-                : product.productColors && product.productColors.length > 0 && !selectedColor
-                ? "Select a Color"
-                : selectedVariant
-                ? ((product.variants.find(v => v.id === selectedVariant)?.stock ?? 0) === 0 ? "Out of Stock" : "Add to Cart")
-                : product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+              {buttonState.text}
             </button>
 
             <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3 sm:space-x-4">
