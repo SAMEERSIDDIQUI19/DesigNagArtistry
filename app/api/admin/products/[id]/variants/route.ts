@@ -50,10 +50,13 @@ export async function PUT(
     const fabrics: { fabric: string }[] = body.fabrics ?? [];
     const colors: { color: string; hexCode: string }[] = body.colors ?? [];
 
+    console.log("Updating variants for product:", id, { sizes, fabrics, colors });
+
     // Handle sizes
-    await prisma.productVariant.deleteMany({
+    const deletedSizes = await prisma.productVariant.deleteMany({
       where: { productId: id, variantName: "size" },
     });
+    console.log("Deleted size variants:", deletedSizes.count);
 
     if (sizes.length > 0) {
       await prisma.productVariant.createMany({
@@ -65,12 +68,14 @@ export async function PUT(
           price: null,
         })),
       });
+      console.log("Created size variants:", sizes.length);
     }
 
     // Handle fabrics
-    await prisma.productVariant.deleteMany({
+    const deletedFabrics = await prisma.productVariant.deleteMany({
       where: { productId: id, variantName: "fabric" },
     });
+    console.log("Deleted fabric variants:", deletedFabrics.count);
 
     if (fabrics.length > 0) {
       await prisma.productVariant.createMany({
@@ -82,12 +87,14 @@ export async function PUT(
           price: null,
         })),
       });
+      console.log("Created fabric variants:", fabrics.length);
     }
 
     // Handle colors
-    await prisma.productVariant.deleteMany({
+    const deletedColors = await prisma.productVariant.deleteMany({
       where: { productId: id, variantName: "color" },
     });
+    console.log("Deleted color variants:", deletedColors.count);
 
     if (colors.length > 0) {
       await prisma.productVariant.createMany({
@@ -99,12 +106,14 @@ export async function PUT(
           price: null,
         })),
       });
+      console.log("Created color variants:", colors.length);
     }
 
     const variants = await prisma.productVariant.findMany({
       where: { productId: id },
       orderBy: { createdAt: "asc" },
     });
+    console.log("Final variants for product:", variants);
     return NextResponse.json(variants);
   } catch (error) {
     console.error("Variants update error:", error);
