@@ -16,9 +16,6 @@ interface CartItem {
     isOnSale: boolean;
     thumbnail: string | null;
     stock: number;
-    images: {
-      imageUrl: string;
-    }[];
   };
   variant?: {
     id: string;

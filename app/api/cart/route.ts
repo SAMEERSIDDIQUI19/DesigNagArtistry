@@ -12,15 +12,7 @@ async function getOrCreateCart(userId?: string, sessionId?: string) {
       include: {
         items: {
           include: {
-            product: {
-              include: {
-                images: {
-                  orderBy: {
-                    sortOrder: 'asc',
-                  },
-                },
-              },
-            },
+            product: true,
             variant: true,
           },
         },
@@ -33,15 +25,7 @@ async function getOrCreateCart(userId?: string, sessionId?: string) {
       include: {
         items: {
           include: {
-            product: {
-              include: {
-                images: {
-                  orderBy: {
-                    sortOrder: 'asc',
-                  },
-                },
-              },
-            },
+            product: true,
             variant: true,
           },
         },
@@ -56,15 +40,7 @@ async function getOrCreateCart(userId?: string, sessionId?: string) {
       include: {
         items: {
           include: {
-            product: {
-              include: {
-                images: {
-                  orderBy: {
-                    sortOrder: 'asc',
-                  },
-                },
-              },
-            },
+            product: true,
             variant: true,
           },
         },
@@ -77,15 +53,7 @@ async function getOrCreateCart(userId?: string, sessionId?: string) {
       include: {
         items: {
           include: {
-            product: {
-              include: {
-                images: {
-                  orderBy: {
-                    sortOrder: 'asc',
-                  },
-                },
-              },
-            },
+            product: true,
             variant: true,
           },
         },
@@ -223,15 +191,7 @@ export async function POST(request: NextRequest) {
       include: {
         items: {
           include: {
-            product: {
-              include: {
-                images: {
-                  orderBy: {
-                    sortOrder: 'asc',
-                  },
-                },
-              },
-            },
+            product: true,
             variant: true,
           },
         },
