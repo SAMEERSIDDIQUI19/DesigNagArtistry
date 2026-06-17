@@ -5,6 +5,16 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
+import dynamic from "next/dynamic";
+
+const ProductReviews = dynamic(() => import("@/components/ProductReviews"), {
+  ssr: false,
+  loading: () => (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-400">
+      Loading reviews…
+    </div>
+  ),
+});
 
 
 
@@ -74,6 +84,12 @@ export default function ProductDetailClient() {
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [sizeChartUrl, setSizeChartUrl] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+  const [avgRating, setAvgRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [accordionReviews, setAccordionReviews] = useState<
+    { id: string; rating: number; comment: string | null; guestName: string | null; user: { name: string } | null }[]
+  >([]);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
 
   // Calculate button state using useMemo to ensure proper reactivity
   const buttonState = useMemo(() => {
@@ -165,6 +181,25 @@ export default function ProductDetailClient() {
     fetchProduct();
   }, [params.slug]);
 
+  useEffect(() => {
+    const slug = params.slug as string;
+    if (!slug) return;
+    const loadReviews = async () => {
+      try {
+        const res = await fetch(`/api/reviews/${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setAvgRating(data.avgRating);
+          setReviewCount(data.count);
+          setAccordionReviews(data.reviews);
+        }
+      } catch {}
+    };
+    loadReviews();
+    window.addEventListener("reviewsRefetch", loadReviews);
+    return () => window.removeEventListener("reviewsRefetch", loadReviews);
+  }, [params.slug]);
+
   const fetchProduct = async () => {
     setLoading(true);
     try {
@@ -174,8 +209,8 @@ export default function ProductDetailClient() {
       console.log("Response status:", response.status);
       console.log("Response data:", data);
       console.log("Product variants:", data.variants);
-      console.log("Fabric variants:", data.variants?.filter(v => v.variantName === "fabric"));
-      console.log("Color variants:", data.variants?.filter(v => v.variantName === "color"));
+      console.log("Fabric variants:", data.variants?.filter((v: { variantName: string }) => v.variantName === "fabric"));
+      console.log("Color variants:", data.variants?.filter((v: { variantName: string }) => v.variantName === "color"));
 
       if (response.ok) {
         setProduct(data);
@@ -200,6 +235,7 @@ export default function ProductDetailClient() {
   };
 
   const handleAddToCart = async () => {
+    window.dispatchEvent(new CustomEvent("showToast", { detail: { message: `"${product?.name}" added to cart`, image: allImages[currentImageIndex] || undefined } }));
     try {
       const sessionId = getSessionId();
       const response = await fetch("/api/cart", {
@@ -219,10 +255,13 @@ export default function ProductDetailClient() {
 
       if (response.ok) {
         console.log("Product added to cart");
-        window.dispatchEvent(new Event('cartUpdate'));
+        window.dispatchEvent(new CustomEvent('cartUpdate', { detail: { delta: quantity } }));
       }
+
+
     } catch (error) {
       console.error("Error adding to cart:", error);
+
     }
   };
 
@@ -357,9 +396,20 @@ export default function ProductDetailClient() {
                 {product.category.name}
               </Link>
             )}
-            <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mt-2 mb-4">
+            <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mt-2 mb-2">
               {product.name}
             </h1>
+            {avgRating > 0 && (
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex text-amber-400 text-base leading-none">
+                  {"\u2605".repeat(Math.round(avgRating))}
+                  {"\u2606".repeat(5 - Math.round(avgRating))}
+                </div>
+                <span className="text-sm text-gray-500">
+                  {avgRating.toFixed(1)} ({reviewCount} review{reviewCount !== 1 ? "s" : ""})
+                </span>
+              </div>
+            )}
 
             <div className="mb-6">{displayPrice()}</div>
 
@@ -583,9 +633,78 @@ export default function ProductDetailClient() {
                 View Cart
               </Link>
             </div>
+
+            {/* Reviews Accordion */}
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => setReviewsOpen(!reviewsOpen)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-900">Customer Reviews</span>
+                  {reviewCount > 0 && (
+                    <span className="text-sm text-gray-500">
+                      ({reviewCount} &middot; {avgRating.toFixed(1)} &#9733;)
+                    </span>
+                  )}
+                </div>
+                <svg
+                  className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${reviewsOpen ? "rotate-180" : ""}`}
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              {reviewsOpen && (
+                <div className="mt-1 border border-t-0 border-gray-200 rounded-b-lg bg-white p-4">
+                  {accordionReviews.length === 0 ? (
+                    <p className="text-sm text-gray-500">No reviews yet. Be the first!</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {accordionReviews.slice(0, 2).map((r) => (
+                        <div key={r.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-amber-400 text-sm leading-none">
+                              {"\u2605".repeat(r.rating)}{"\u2606".repeat(5 - r.rating)}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {r.user?.name || r.guestName || "Anonymous"}
+                            </span>
+                          </div>
+                          {r.comment && (
+                            <p className="text-sm text-gray-600 line-clamp-2">{r.comment}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById("reviews-section");
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-800"
+                  >
+                    {reviewCount > 2
+                      ? `See all ${reviewCount} reviews \u0026 write yours \u2192`
+                      : "Write a Review \u2192"}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      <ProductReviews productSlug={product.slug} />
 
       {/* Lightbox Modal */}
       {showLightbox && (

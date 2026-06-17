@@ -101,12 +101,10 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(totalCount / pageSize);
 
-    return NextResponse.json({
-      products,
-      totalPages,
-      currentPage: page,
-      totalCount,
-    });
+    return NextResponse.json(
+      { products, totalPages, currentPage: page, totalCount },
+      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120" } }
+    );
   } catch (error) {
     console.error("Products fetch error:", error);
     return NextResponse.json(

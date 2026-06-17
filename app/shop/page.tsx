@@ -103,7 +103,8 @@ export default function ShopPage() {
     }
   };
 
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (productId: string, productName: string, productImage?: string) => {
+    window.dispatchEvent(new CustomEvent("showToast", { detail: { message: `\u201c${productName}\u201d added to cart`, image: productImage } }));
     try {
       const sessionId = getSessionId();
       const response = await fetch("/api/cart", {
@@ -116,9 +117,7 @@ export default function ShopPage() {
       });
 
       if (response.ok) {
-        console.log("Product added to cart");
-        // Dispatch event to update cart count in header
-        window.dispatchEvent(new Event('cartUpdate'));
+        window.dispatchEvent(new CustomEvent('cartUpdate', { detail: { delta: 1 } }));
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -365,7 +364,7 @@ export default function ShopPage() {
                         </Link>
                         <div className="text-xs sm:text-sm mb-2 mt-auto">{displayPrice(product)}</div>
                         <button
-                          onClick={() => handleAddToCart(product.id)}
+                          onClick={() => handleAddToCart(product.id, product.name, getPrimaryThumbnail(product.thumbnail) || undefined)}
                           disabled={product.stock === 0 || product.status !== "active"}
                           className="w-full bg-[#704204] text-white py-1.5 sm:py-2 px-2 rounded-lg hover:bg-[#8a5626] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                         >

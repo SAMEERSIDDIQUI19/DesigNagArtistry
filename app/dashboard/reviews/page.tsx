@@ -6,6 +6,7 @@ interface Review {
   id: string;
   rating: number;
   comment: string | null;
+  isHidden: boolean;
   createdAt: string;
   user: { name: string; email: string } | null;
   product: { name: string } | null;
@@ -36,6 +37,28 @@ export default function ReviewsPage() {
       console.error("Error fetching reviews:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleHide = async (id: string, currentHidden: boolean) => {
+    try {
+      const token = localStorage.getItem("admin_token");
+      const response = await fetch(`/api/admin/reviews/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isHidden: !currentHidden }),
+      });
+
+      if (response.ok) {
+        setReviews((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, isHidden: !currentHidden } : r))
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling review visibility:", error);
     }
   };
 
@@ -81,6 +104,7 @@ export default function ReviewsPage() {
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">User</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Rating</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Comment</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
                 </tr>
@@ -98,15 +122,38 @@ export default function ReviewsPage() {
                     <td className="py-3 px-4 text-2xl">{renderStars(review.rating)}</td>
                     <td className="py-3 px-4 max-w-xs truncate">{review.comment || "-"}</td>
                     <td className="py-3 px-4">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                          review.isHidden
+                            ? "bg-gray-100 text-gray-600"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {review.isHidden ? "Hidden" : "Visible"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
                       {new Date(review.createdAt).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4">
-                      <button
-                        onClick={() => handleDelete(review.id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleToggleHide(review.id, review.isHidden)}
+                          className={`text-sm font-medium ${
+                            review.isHidden
+                              ? "text-green-600 hover:text-green-800"
+                              : "text-gray-500 hover:text-gray-700"
+                          }`}
+                        >
+                          {review.isHidden ? "Unhide" : "Hide"}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(review.id)}
+                          className="text-sm font-medium text-red-600 hover:text-red-800"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

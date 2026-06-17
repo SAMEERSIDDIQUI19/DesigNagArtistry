@@ -57,6 +57,8 @@ export default function CartPage() {
       if (response.ok) {
         const data = await response.json();
         setCartItems(data);
+        const totalQty = data.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+        window.dispatchEvent(new CustomEvent('cartUpdate', { detail: { count: totalQty } }));
       }
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -65,8 +67,16 @@ export default function CartPage() {
     }
   };
 
-  const updateQuantity = async (itemId: string, quantity: number) => {
-    if (quantity < 1) return;
+  const updateQuantity = async (itemId: string, newQty: number) => {
+    const item = cartItems.find((i) => i.id === itemId);
+    if (!item) return;
+    const clamped = Math.max(1, Math.min(newQty, item.product.stock));
+    if (clamped === item.quantity) return;
+
+    const previous = cartItems;
+    setCartItems((prev) =>
+      prev.map((i) => (i.id === itemId ? { ...i, quantity: clamped } : i))
+    );
 
     try {
       const sessionId = getSessionId();
@@ -76,20 +86,27 @@ export default function CartPage() {
           "Content-Type": "application/json",
           "x-session-id": sessionId,
         },
-        body: JSON.stringify({ quantity }),
+        body: JSON.stringify({ quantity: clamped }),
       });
 
       if (response.ok) {
-        fetchCart();
-        // Dispatch event to update cart count in header
-        window.dispatchEvent(new Event('cartUpdate'));
+        const delta = clamped - item.quantity;
+        window.dispatchEvent(new CustomEvent('cartUpdate', { detail: { delta } }));
+      } else {
+        setCartItems(previous);
       }
     } catch (error) {
       console.error("Error updating cart:", error);
+      setCartItems(previous);
     }
   };
 
-  const removeItem = async (itemId: string) => {
+  const removeItem = async (itemId: string, productName: string, productImage?: string) => {
+    const removedItem = cartItems.find((i) => i.id === itemId);
+    const removedQty = removedItem?.quantity ?? 1;
+    setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+    window.dispatchEvent(new CustomEvent("showToast", { detail: { message: `"${productName}" has been removed from your cart`, image: productImage, type: "error" } }));
+
     try {
       const sessionId = getSessionId();
       const response = await fetch(`/api/cart/${itemId}`, {
@@ -100,9 +117,7 @@ export default function CartPage() {
       });
 
       if (response.ok) {
-        fetchCart();
-        // Dispatch event to update cart count in header
-        window.dispatchEvent(new Event('cartUpdate'));
+        window.dispatchEvent(new CustomEvent('cartUpdate', { detail: { delta: -removedQty } }));
       }
     } catch (error) {
       console.error("Error removing item:", error);
@@ -203,16 +218,37 @@ export default function CartPage() {
                     </p>
                   </div>
 
-                  <div className="text-right">
+                  <div className="flex flex-col items-end gap-2">
                     <p className="font-bold text-gray-900">
                       Rs. {(displayPrice(item) * item.quantity).toFixed(2)}
                     </p>
-                    <p className="text-sm font-bold text-gray-600 mt-1">
-                      QTY: {item.quantity}
-                    </p>
+                    <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                        className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+                        aria-label="Decrease quantity"
+                      >
+                        −
+                      </button>
+                      <span className="w-8 h-8 flex items-center justify-center text-sm font-semibold text-gray-900 border-x border-gray-300">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        disabled={item.quantity >= item.product.stock}
+                        className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                    {item.quantity >= item.product.stock && (
+                      <p className="text-xs text-amber-600">Max stock reached</p>
+                    )}
                     <button
-                      onClick={() => removeItem(item.id)}
-                      className="text-red-600 hover:text-red-800 text-sm mt-2"
+                      onClick={() => removeItem(item.id, item.product.name, getProductImage(item.product) || undefined)}
+                      className="text-red-600 hover:text-red-800 text-xs mt-1"
                     >
                       Remove
                     </button>

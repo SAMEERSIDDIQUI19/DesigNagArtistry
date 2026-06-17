@@ -42,8 +42,15 @@ export default function Header() {
 
   // Listen for cart updates
   useEffect(() => {
-    const handleCartUpdate = () => {
-      fetchCartCount();
+    const handleCartUpdate = (event: Event) => {
+      const e = event as CustomEvent<{ delta?: number; count?: number }>;
+      if (e.detail?.count !== undefined) {
+        setCartCount(e.detail.count);
+      } else if (e.detail?.delta !== undefined) {
+        setCartCount((prev) => Math.max(0, prev + e.detail.delta!));
+      } else {
+        fetchCartCount();
+      }
     };
 
     window.addEventListener('cartUpdate', handleCartUpdate);

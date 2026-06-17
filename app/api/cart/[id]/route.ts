@@ -96,15 +96,12 @@ export async function DELETE(
     });
 
     if (!cartItem) {
-      return NextResponse.json({ error: "Cart item not found" }, { status: 404 });
+      // Already deleted — idempotent success
+      return NextResponse.json({ message: "Item removed from cart" });
     }
 
-    // Check ownership based on userId or sessionId
+    // For authenticated users only: verify cart ownership
     if (userId && cartItem.cart.userId !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    if (!userId && cartItem.cart.sessionId !== sessionId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

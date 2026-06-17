@@ -59,7 +59,9 @@ export async function GET(request: NextRequest) {
 
     console.log("Hierarchical categories:", JSON.stringify(rootCategories, null, 2));
 
-    return NextResponse.json(rootCategories);
+    return NextResponse.json(rootCategories, {
+      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" },
+    });
   } catch (error) {
     console.error("Categories fetch error:", error);
     return NextResponse.json(
