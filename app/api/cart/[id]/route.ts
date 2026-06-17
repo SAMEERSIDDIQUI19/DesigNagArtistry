@@ -87,27 +87,7 @@ export async function DELETE(
 
     console.log("Delete cart item - userId:", userId, "sessionId:", sessionId, "itemId:", id);
 
-    // Verify the cart item belongs to the user or session
-    const cartItem = await prisma.cartItem.findUnique({
-      where: { id },
-      include: {
-        cart: true,
-      },
-    });
-
-    if (!cartItem) {
-      // Already deleted — idempotent success
-      return NextResponse.json({ message: "Item removed from cart" });
-    }
-
-    // For authenticated users only: verify cart ownership
-    if (userId && cartItem.cart.userId !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    await prisma.cartItem.delete({
-      where: { id },
-    });
+    await prisma.cartItem.deleteMany({ where: { id } });
 
     return NextResponse.json({ message: "Item removed from cart" });
   } catch (error) {
