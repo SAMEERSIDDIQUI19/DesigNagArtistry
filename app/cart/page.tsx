@@ -133,16 +133,9 @@ export default function CartPage() {
   };
 
   const getProductImage = (product: CartItem['product']): string => {
-    // If thumbnail exists, use it
     if (product.thumbnail) {
       return getPrimaryThumbnail(product.thumbnail) || '/images/placeholder.jpg';
     }
-    // Otherwise, use the first image from images array if available
-    if (product.images && product.images.length > 0) {
-      const imageUrl = product.images[0].imageUrl.startsWith('/') ? product.images[0].imageUrl : `/${product.images[0].imageUrl}`;
-      return imageUrl;
-    }
-    // Fallback to placeholder
     return '/images/placeholder.jpg';
   };
 

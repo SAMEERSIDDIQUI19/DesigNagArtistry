@@ -6,30 +6,36 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-producti
 
 // Helper function to get or create user/cart
 async function getOrCreateCart(userId?: string, sessionId?: string) {
+  const productSelect = {
+    id: true,
+    name: true,
+    slug: true,
+    price: true,
+    salePrice: true,
+    isOnSale: true,
+    thumbnail: true,
+    stock: true,
+  };
+
+  const itemsInclude = {
+    items: {
+      include: {
+        product: { select: productSelect },
+        variant: true,
+      },
+    },
+  };
+
   if (userId) {
     const cart = await prisma.cart.findUnique({
       where: { userId },
-      include: {
-        items: {
-          include: {
-            product: true,
-            variant: true,
-          },
-        },
-      },
+      include: itemsInclude,
     });
     if (cart) return cart;
 
     return await prisma.cart.create({
       data: { userId },
-      include: {
-        items: {
-          include: {
-            product: true,
-            variant: true,
-          },
-        },
-      },
+      include: itemsInclude,
     });
   }
 
@@ -37,27 +43,13 @@ async function getOrCreateCart(userId?: string, sessionId?: string) {
   if (sessionId) {
     const cart = await prisma.cart.findFirst({
       where: { sessionId },
-      include: {
-        items: {
-          include: {
-            product: true,
-            variant: true,
-          },
-        },
-      },
+      include: itemsInclude,
     });
     if (cart) return cart;
 
     return await prisma.cart.create({
       data: { sessionId },
-      include: {
-        items: {
-          include: {
-            product: true,
-            variant: true,
-          },
-        },
-      },
+      include: itemsInclude,
     });
   }
 
@@ -191,7 +183,18 @@ export async function POST(request: NextRequest) {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                price: true,
+                salePrice: true,
+                isOnSale: true,
+                thumbnail: true,
+                stock: true,
+              },
+            },
             variant: true,
           },
         },

@@ -29,33 +29,16 @@ export async function PUT(
 
     console.log("Update cart item - userId:", userId, "sessionId:", sessionId, "itemId:", id, "quantity:", quantity);
 
-    // Verify the cart item belongs to the user or session
-    const cartItem = await prisma.cartItem.findUnique({
-      where: { id },
-      include: {
-        cart: true,
-      },
-    });
-
-    if (!cartItem) {
-      return NextResponse.json({ error: "Cart item not found" }, { status: 404 });
-    }
-
-    // Check ownership based on userId or sessionId
-    if (userId && cartItem.cart.userId !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    if (!userId && cartItem.cart.sessionId !== sessionId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const updatedItem = await prisma.cartItem.update({
+    const result = await prisma.cartItem.updateMany({
       where: { id },
       data: { quantity },
     });
 
-    return NextResponse.json(updatedItem);
+    if (result.count === 0) {
+      return NextResponse.json({ error: "Cart item not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ id, quantity });
   } catch (error) {
     console.error("Cart item update error:", error);
     return NextResponse.json(
