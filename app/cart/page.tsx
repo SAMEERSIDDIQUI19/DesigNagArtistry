@@ -54,6 +54,7 @@ export default function CartPage() {
       if (response.ok) {
         const data = await response.json();
         setCartItems(data);
+        sessionStorage.setItem('cart_items', JSON.stringify(data));
         const totalQty = data.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
         window.dispatchEvent(new CustomEvent('cartUpdate', { detail: { count: totalQty } }));
       }
@@ -71,9 +72,9 @@ export default function CartPage() {
     if (clamped === item.quantity) return;
 
     const previous = cartItems;
-    setCartItems((prev) =>
-      prev.map((i) => (i.id === itemId ? { ...i, quantity: clamped } : i))
-    );
+    const updated = cartItems.map((i) => (i.id === itemId ? { ...i, quantity: clamped } : i));
+    setCartItems(updated);
+    sessionStorage.setItem('cart_items', JSON.stringify(updated));
 
     try {
       const sessionId = getSessionId();
@@ -91,17 +92,21 @@ export default function CartPage() {
         window.dispatchEvent(new CustomEvent('cartUpdate', { detail: { delta } }));
       } else {
         setCartItems(previous);
+        sessionStorage.setItem('cart_items', JSON.stringify(previous));
       }
     } catch (error) {
       console.error("Error updating cart:", error);
       setCartItems(previous);
+      sessionStorage.setItem('cart_items', JSON.stringify(previous));
     }
   };
 
   const removeItem = async (itemId: string, productName: string, productImage?: string) => {
     const removedItem = cartItems.find((i) => i.id === itemId);
     const removedQty = removedItem?.quantity ?? 1;
-    setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+    const afterRemove = cartItems.filter((item) => item.id !== itemId);
+    setCartItems(afterRemove);
+    sessionStorage.setItem('cart_items', JSON.stringify(afterRemove));
     window.dispatchEvent(new CustomEvent("showToast", { detail: { message: `"${productName}" has been removed from your cart`, image: productImage, type: "error" } }));
 
     try {

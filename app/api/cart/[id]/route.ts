@@ -29,12 +29,9 @@ export async function PUT(
 
     console.log("Update cart item - userId:", userId, "sessionId:", sessionId, "itemId:", id, "quantity:", quantity);
 
-    const result = await prisma.cartItem.updateMany({
-      where: { id },
-      data: { quantity },
-    });
+    const result = await prisma.$executeRaw`UPDATE cart_items SET quantity = ${quantity} WHERE id = ${id}`;
 
-    if (result.count === 0) {
+    if (result === 0) {
       return NextResponse.json({ error: "Cart item not found" }, { status: 404 });
     }
 
@@ -70,7 +67,7 @@ export async function DELETE(
 
     console.log("Delete cart item - userId:", userId, "sessionId:", sessionId, "itemId:", id);
 
-    await prisma.cartItem.deleteMany({ where: { id } });
+    await prisma.$executeRaw`DELETE FROM cart_items WHERE id = ${id}`;
 
     return NextResponse.json({ message: "Item removed from cart" });
   } catch (error) {

@@ -46,9 +46,7 @@ interface CartItem {
     salePrice: number | null;
     isOnSale: boolean;
     thumbnail: string | null;
-    images: {
-      imageUrl: string;
-    }[];
+    stock: number;
   };
 }
 
@@ -164,6 +162,22 @@ export default function CheckoutPage() {
   };
 
   const fetchCart = async () => {
+    // Try sessionStorage first — cart page writes here after every qty/remove change
+    try {
+      const stored = sessionStorage.getItem('cart_items');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCartItems(parsed);
+          setLoading(false);
+          return;
+        }
+      }
+    } catch {
+      // ignore parse errors, fall through to API
+    }
+
+    // Fallback: fetch from API (e.g. user landed directly on /checkout)
     setLoading(true);
     try {
       const sessionId = getSessionId();
@@ -198,14 +212,6 @@ export default function CheckoutPage() {
     if (product.thumbnail) {
       return getPrimaryThumbnail(product.thumbnail) || '/images/placeholder.jpg';
     }
-
-    if (product.images && product.images.length > 0) {
-      const imageUrl = product.images[0].imageUrl;
-      return imageUrl.startsWith('/') || imageUrl.startsWith('data:')
-        ? imageUrl
-        : `/${imageUrl}`;
-    }
-
     return '/images/placeholder.jpg';
   };
 
@@ -261,6 +267,7 @@ export default function CheckoutPage() {
         const data = await response.json();
         // Clear cart
         localStorage.removeItem("session_id");
+        sessionStorage.removeItem("cart_items");
         window.dispatchEvent(new Event('cartUpdate'));
         router.push(`/order-success?orderId=${data.orderId}&orderNumber=${encodeURIComponent(data.orderNumber)}`);
       } else {

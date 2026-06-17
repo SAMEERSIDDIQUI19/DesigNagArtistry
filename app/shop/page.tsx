@@ -44,6 +44,7 @@ export default function ShopPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [addingToCart, setAddingToCart] = useState<Set<string>>(new Set());
 
   // Generate or get session ID for guest users
   const getSessionId = () => {
@@ -104,6 +105,8 @@ export default function ShopPage() {
   };
 
   const handleAddToCart = async (productId: string, productName: string, productImage?: string) => {
+    if (addingToCart.has(productId)) return;
+    setAddingToCart((prev) => new Set(prev).add(productId));
     window.dispatchEvent(new CustomEvent("showToast", { detail: { message: `\u201c${productName}\u201d added to cart`, image: productImage } }));
     try {
       const sessionId = getSessionId();
@@ -121,6 +124,8 @@ export default function ShopPage() {
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
+    } finally {
+      setAddingToCart((prev) => { const s = new Set(prev); s.delete(productId); return s; });
     }
   };
 
@@ -365,10 +370,10 @@ export default function ShopPage() {
                         <div className="text-xs sm:text-sm mb-2 mt-auto">{displayPrice(product)}</div>
                         <button
                           onClick={() => handleAddToCart(product.id, product.name, getPrimaryThumbnail(product.thumbnail) || undefined)}
-                          disabled={product.stock === 0 || product.status !== "active"}
+                          disabled={product.stock === 0 || product.status !== "active" || addingToCart.has(product.id)}
                           className="w-full bg-[#704204] text-white py-1.5 sm:py-2 px-2 rounded-lg hover:bg-[#8a5626] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                         >
-                          {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                          {product.stock === 0 ? "Out of Stock" : addingToCart.has(product.id) ? "Adding…" : "Add to Cart"}
                         </button>
                       </div>
                     </div>

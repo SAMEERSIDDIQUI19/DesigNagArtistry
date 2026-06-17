@@ -73,7 +73,9 @@ export async function GET(request: NextRequest) {
     }
 
     const cart = await getOrCreateCart(userId, sessionId || undefined);
-    return NextResponse.json(cart.items);
+    return NextResponse.json(cart.items, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   } catch (error) {
     console.error("Cart fetch error:", error);
     return NextResponse.json(
@@ -146,10 +148,8 @@ export async function POST(request: NextRequest) {
 
     if (existingItem) {
       // Update quantity
-      await prisma.cartItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + quantity },
-      });
+      const newQty = existingItem.quantity + quantity;
+      await prisma.$executeRaw`UPDATE cart_items SET quantity = ${newQty} WHERE id = ${existingItem.id}`;
     } else {
       // Fetch product to get price
       const product = await prisma.product.findUnique({
